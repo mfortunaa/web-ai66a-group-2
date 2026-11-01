@@ -30,7 +30,7 @@ Eventy provides a straightforward event discovery and registration experience. T
 
 Events are grouped into **On Sale** and **Coming Soon**. Users can filter events by date and sale status. Each event includes its description, time, location, ticket price, and availability.
 
-**Current status:** Planning and initial repository setup. The features below have not been implemented yet.
+**Current status:** FastAPI foundation, SQLite user storage, registration/login, JWT authentication, and login/registration pages are implemented. The authenticated event page is a temporary welcome screen. Event discovery and booking features remain planned.
 
 ---
 
@@ -40,7 +40,7 @@ The routes below are proposed frontend routes and may change during implementati
 
 | Story ID | User Story                                                                                                  | Starting Point / Screen    | Proposed Route               |   Status    |
 | :------: | :---------------------------------------------------------------------------------------------------------- | :------------------------- | :--------------------------- | :---------: |
-| **US01** | As a visitor, I want to create an account and log in so that I can access the event catalog.                | Login / Registration       | `/login`, `/register`        | Not started |
+| **US01** | Create an account and log in. | Login / Registration | `/index.html`, `/pages/register.html` | Implemented (catalog pending) |
 | **US02** | As a user, I want to browse On Sale and Coming Soon events so that I can find events of interest.           | Event Catalog              | `/events`                    | Not started |
 | **US03** | As a user, I want to filter events by date and sale status so that I can narrow down the list.              | Catalog filters            | `/events`                    | Not started |
 | **US04** | As a user, I want to view an event's description, time, venue, price, and availability before booking.      | Event Details              | `/events/:id`                | Not started |
@@ -82,7 +82,7 @@ Events will initially be populated using seed data. Real payment integration, se
 ```text
 web-ai66a-group-2/
 |-- frontend/
-|   |-- index.html          # Entry page (currently a sample)
+|   |-- index.html          # Login entry page
 |   |-- pages/              # Application pages
 |   |-- css/                # Stylesheets
 |   |-- js/                 # UI behavior and API calls
@@ -110,6 +110,7 @@ web-ai66a-group-2/
 - [Proposed API](docs/api.md)
 - [Proposed Database Design](docs/database.md)
 - [Backend Structure](backend/README.md)
+- [Setup Guide & Authentication Handoff](docs/SETUP.md)
 
 ---
 
@@ -123,15 +124,15 @@ With Python 3 installed, run the following command from the repository root:
 python -m http.server 5500 --directory frontend
 ```
 
-Open [http://localhost:5500](http://localhost:5500) to view the current sample page.
+Open [http://localhost:5500](http://localhost:5500) to use the login page. Start the backend first to register and sign in.
 
 ### Backend Setup
 
-To be added once the FastAPI application and dependencies are implemented.
+Follow [docs/SETUP.md](docs/SETUP.md) to install dependencies, configure a local secret, start FastAPI, and run the authentication tests.
 
 ### Test Accounts
 
-To be added when authentication is available.
+Create your own account through the registration page. No shared test credentials are committed.
 
 ---
 

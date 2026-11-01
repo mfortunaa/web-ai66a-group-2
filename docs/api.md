@@ -1,6 +1,6 @@
 # Proposed API
 
-Planning contract only: these endpoints are not implemented yet. Prefix application routes with `/api`. Require a bearer JWT on event and booking routes.
+Authentication endpoints are implemented; event and booking endpoints remain planned. See [setup and authentication examples](SETUP.md). Prefix application routes with `/api`. Require a bearer JWT on event and booking routes.
 
 | Method | Endpoint | Purpose | Success |
 | --- | --- | --- | --- |

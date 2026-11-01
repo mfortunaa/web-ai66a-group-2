@@ -1,6 +1,6 @@
 # Backend
 
-Reserved for the FastAPI application. No runnable backend exists yet.
+The FastAPI foundation and authentication are implemented. See [the setup guide](../docs/SETUP.md) to run the application and tests.
 
 - `app/api/`: HTTP routes for authentication, events, and bookings.
 - `app/core/`: configuration and authentication helpers.
@@ -11,4 +11,4 @@ Reserved for the FastAPI application. No runnable backend exists yet.
 - `scripts/`: seed events and setup helpers.
 - `tests/`: pytest and TestClient tests.
 
-During implementation, add the entry point at `app/main.py`, a dependency file, and `.env.example` with placeholder values. Store actual secrets in an ignored `.env` file. Use SQLite initially and manage sessions with FastAPI dependencies.
+Entry point: `app/main.py`. Store actual secrets in an ignored `backend/.env` file. SQLite tables are created during application startup. Each request gets a session through `app.db.session.get_session`. Protect new routes with `Depends(app.core.security.get_current_user)`.

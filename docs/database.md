@@ -1,6 +1,6 @@
 # Proposed Database Design
 
-Use SQLite and SQLModel for the first version. This document describes the planned schema; no tables have been created yet.
+Use SQLite and SQLModel for the first version. The User table is implemented as `users`; Event and Booking remain planned. User profile and authentication are documented in [SETUP.md](SETUP.md).
 
 | Entity | Main fields |
 | --- | --- |
