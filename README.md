@@ -30,7 +30,7 @@ Eventy provides a straightforward event discovery and registration experience. T
 
 Events are grouped into **On Sale** and **Coming Soon**. Users can filter events by date and sale status. Each event includes its description, time, location, ticket price, and availability.
 
-**Current status:** FastAPI foundation, SQLite user storage, registration/login, JWT authentication, and login/registration pages are implemented. The authenticated event page is a temporary welcome screen. Event discovery and booking features remain planned.
+**Current status:** FastAPI foundation, SQLite user storage, registration/login, JWT authentication, and authenticated event list/detail APIs are implemented. The authenticated event page is still a temporary welcome screen; the event catalog UI and booking flow remain planned.
 
 ---
 
@@ -41,9 +41,9 @@ The routes below are proposed frontend routes and may change during implementati
 | Story ID | User Story                                                                                                  | Starting Point / Screen    | Proposed Route               |   Status    |
 | :------: | :---------------------------------------------------------------------------------------------------------- | :------------------------- | :--------------------------- | :---------: |
 | **US01** | Create an account and log in. | Login / Registration | `/index.html`, `/pages/register.html` | Implemented (catalog pending) |
-| **US02** | As a user, I want to browse On Sale and Coming Soon events so that I can find events of interest.           | Event Catalog              | `/events`                    | Not started |
-| **US03** | As a user, I want to filter events by date and sale status so that I can narrow down the list.              | Catalog filters            | `/events`                    | Not started |
-| **US04** | As a user, I want to view an event's description, time, venue, price, and availability before booking.      | Event Details              | `/events/:id`                | Not started |
+| **US02** | As a user, I want to browse On Sale and Coming Soon events so that I can find events of interest.           | Event Catalog              | `/events`                    | API implemented; UI pending |
+| **US03** | As a user, I want to filter events by date and sale status so that I can narrow down the list.              | Catalog filters            | `/events`                    | API implemented; UI pending |
+| **US04** | As a user, I want to view an event's description, time, venue, price, and availability before booking.      | Event Details              | `/events/:id`                | API implemented; UI pending |
 | **US05** | As a user, I want to select a ticket quantity and enter attendee information so that I can place a booking. | Buy Tickets / Booking Form | `/events/:id/book`           | Not started |
 | **US06** | As a user, I want to complete a simulated payment so that I can confirm my booking.                         | Checkout                   | `/bookings/:id/payment`      | Not started |
 | **US07** | As a user, I want to see my booking reference and event summary after payment.                              | Booking Confirmation       | `/bookings/:id/confirmation` | Not started |
