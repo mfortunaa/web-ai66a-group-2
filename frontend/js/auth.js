@@ -10,7 +10,7 @@ export function getToken() { return sessionStorage.getItem(TOKEN_KEY); }
 export function clearToken() { sessionStorage.removeItem(TOKEN_KEY); }
 export function logout() { clearToken(); window.location.replace(loginUrl); }
 
-async function authRequest(path, options = {}) {
+export async function authRequest(path, options = {}) {
   let response;
   try { response = await fetch(`${API_BASE_URL}${path}`, options); }
   catch { throw new Error('Không thể kết nối máy chủ. Vui lòng thử lại sau.'); }
@@ -23,9 +23,24 @@ async function authRequest(path, options = {}) {
     };
     const error = new Error(messages[response.status] || 'Có lỗi xảy ra. Vui lòng thử lại.');
     error.status = response.status;
+    error.code = data.detail?.code;
+    error.retryAfter = Number(response.headers.get('Retry-After') || data.detail?.retry_after || 0);
+    const codes = {
+      email_not_verified: 'Vui lòng xác thực email trước khi đăng nhập.',
+      invalid_challenge: 'Mã không hợp lệ, đã hết hạn hoặc đã sử dụng. Vui lòng yêu cầu mã mới.',
+      delivery_failed: 'Chưa gửi được email. Vui lòng thử gửi lại sau 60 giây.',
+      rate_limited: 'Bạn đã thử quá nhiều lần. Vui lòng chờ rồi thử lại.',
+    };
+    if (codes[error.code]) error.message = codes[error.code];
     throw error;
   }
   return data;
+}
+
+export function postAuth(action, data) {
+  return authRequest(`/api/auth/${action}`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data),
+  });
 }
 
 export function register(fullName, email, password) {

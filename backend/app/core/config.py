@@ -14,6 +14,13 @@ class Settings(BaseSettings):
     database_url: str = f"sqlite:///{(BACKEND_DIR / 'eventy.db').as_posix()}"
     access_token_expire_minutes: int = Field(default=30, ge=1, le=1440)
     cors_origins: list[str] = ["http://localhost:5500", "http://127.0.0.1:5500"]
+    smtp_host: str = "localhost"
+    smtp_port: int = 1025
+    smtp_username: str = ""
+    smtp_password: str = ""
+    smtp_starttls: bool = False
+    mail_from: str = "noreply@eventy.local"
+    frontend_url: str = "http://localhost:8000"
 
     @field_validator("secret_key")
     @classmethod

@@ -14,6 +14,7 @@ def create_db_and_tables() -> None:
     from app.models.booking import Booking  # noqa: F401
     from app.models.event import Event, EventSession  # noqa: F401
     from app.models.user import User  # noqa: F401
+    from app.models.auth_challenge import AuthChallenge, AuthLimit  # noqa: F401
 
     SQLModel.metadata.create_all(engine)
 

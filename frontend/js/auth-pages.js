@@ -33,10 +33,6 @@ form.addEventListener('input', (event) => {
   }
 });
 
-if (new URLSearchParams(window.location.search).has('registered')) {
-  message.textContent = 'Đăng ký thành công! Bạn có thể đăng nhập ngay.';
-  message.classList.add('success');
-}
 if (getToken()) {
   getCurrentUser().then(() => window.location.replace(eventsUrl)).catch(() => {});
 }
@@ -61,18 +57,34 @@ form.addEventListener('submit', async (event) => {
   button.textContent = 'Đang xử lý…';
   try {
     if (isRegistration) {
-      await register(data.get('full_name'), data.get('email'), password);
-      window.location.replace(new URL('../index.html?registered=1', window.location.href));
+      const result = await register(data.get('full_name'), data.get('email'), password);
+      sessionStorage.setItem('eventy_verification_email', data.get('email').trim());
+      window.location.replace(new URL(`verify-email.html?delivery=${result.verification_delivery}`, window.location.href));
     } else {
       await login(data.get('email'), password);
       window.location.replace(eventsUrl);
     }
   } catch (error) {
+    if (error.code === 'email_not_verified') {
+      sessionStorage.setItem('eventy_verification_email', data.get('email').trim());
+      window.location.assign(new URL('pages/verify-email.html', window.location.href));
+      return;
+    }
     if (error.status === 409) showFieldError('email', error.message);
     else message.textContent = error.message;
+    if (error.retryAfter) {
+      const until = Date.now() + error.retryAfter * 1000;
+      form.dataset.blockedUntil = until;
+      const timer = setInterval(() => {
+        const seconds = Math.max(0, Math.ceil((until - Date.now()) / 1000));
+        button.disabled = seconds > 0;
+        button.textContent = seconds ? `Thử lại sau ${seconds}s` : originalLabel;
+        if (!seconds) { delete form.dataset.blockedUntil; clearInterval(timer); }
+      }, 250);
+    }
   }
   finally {
-    button.disabled = false; button.textContent = originalLabel;
+    button.disabled = Boolean(form.dataset.blockedUntil); button.textContent = originalLabel;
     form.setAttribute('aria-busy', 'false');
   }
 });

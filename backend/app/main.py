@@ -3,6 +3,9 @@ import mimetypes
 from pathlib import Path
 
 from fastapi import FastAPI
+from fastapi.exceptions import RequestValidationError
+from fastapi.exception_handlers import request_validation_exception_handler
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
@@ -22,11 +25,25 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="Eventy API", version="0.1.0", lifespan=lifespan)
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_error(request, exc):
+    if request.url.path.startswith("/api/auth/"):
+        # FastAPI normally echoes invalid inputs; never reflect credentials/challenges.
+        return JSONResponse(status_code=422, content={"detail": [
+            {"loc": list(error["loc"]), "msg": error["msg"], "type": error["type"]}
+            for error in exc.errors()
+        ]})
+    return await request_validation_exception_handler(request, exc)
+
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=get_settings().cors_origins,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["Authorization", "Content-Type", "Idempotency-Key"],
+    expose_headers=["Retry-After"],
 )
 app.include_router(auth_router)
 app.include_router(events_router)

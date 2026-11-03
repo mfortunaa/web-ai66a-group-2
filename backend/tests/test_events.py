@@ -1,3 +1,4 @@
+import re
 from datetime import date, datetime, timedelta, timezone
 import sys
 
@@ -39,6 +40,8 @@ def create_account(client, email="event-tester@example.com"):
         },
     )
     assert response.status_code == 201
+    code = re.search(r"\b[0-9]{6}\b", client.outbox[-1][2]).group()
+    assert client.post("/api/auth/verify-email", json={"email": email, "code": code}).status_code == 200
     token = client.post(
         "/api/auth/token",
         data={"username": email, "password": "password123"},
