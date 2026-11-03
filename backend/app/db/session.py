@@ -11,6 +11,7 @@ engine = create_engine(
 
 def create_db_and_tables() -> None:
     # Import table models here so SQLModel knows them before creating tables.
+    from app.models.event import Event, EventSession  # noqa: F401
     from app.models.user import User  # noqa: F401
 
     SQLModel.metadata.create_all(engine)
