@@ -2,12 +2,12 @@ import threading
 from datetime import datetime, timedelta, timezone
 
 import pytest
-from sqlmodel import Session, SQLModel, create_engine
+from sqlmodel import Session, SQLModel, create_engine, select
 
 from app.models.booking import Booking
 from app.models.event import Event, EventSession
 from app.models.user import User
-from app.schemas.booking import BookingCreate
+from app.schemas.booking import BookingCreate, BookingRead
 from app.services import bookings as service
 
 ATTENDEE = {"attendee_name": "An Nguyen", "attendee_email": "an@example.com", "attendee_phone": "0901234567"}
@@ -188,7 +188,7 @@ def test_idempotent_create(client, db_engine, buyer, other):
     assert book(client, buyer, sid, key="retry-key-1", quantity=3).status_code == 409
     assert book(client, other, sid, key="retry-key-1").json()["id"] != first.json()["id"]  # keys are per user
     with Session(db_engine) as db:
-        assert len(db.query(Booking).all()) == 2
+        assert len(db.exec(select(Booking)).all()) == 2
 
 
 def test_cors_allows_idempotency_key_header(client):
@@ -271,4 +271,51 @@ def test_concurrent_duplicate_creates_make_one_booking(race_engine):
     race(race_engine, [lambda db: ids.append(service.create_booking(db, 1, data, "race-key-01")[0].id)] * 8)
     assert len(set(ids)) == 1
     with Session(race_engine) as db:
-        assert len(db.query(Booking).all()) == 1
+        assert len(db.exec(select(Booking)).all()) == 1
+
+
+@pytest.mark.parametrize("phone", ["........", "--------", "+........", "123-4567", "1234567890123456", "090ABC1234"])
+def test_rejects_phone_without_enough_real_digits(client, db_engine, buyer, phone):
+    _, (sid,) = add_event(db_engine)
+    response = book(client, buyer, sid, attendee_phone=phone)
+    assert response.status_code == 422
+    with Session(db_engine) as db:
+        assert db.exec(select(Booking)).all() == []
+
+
+@pytest.mark.parametrize("phone", ["0901234567", "090 123 4567", "+84 901.234-567", "+123456789012345"])
+def test_accepts_formatted_phone_and_optional_country_prefix(client, db_engine, buyer, phone):
+    _, (sid,) = add_event(db_engine)
+    response = book(client, buyer, sid, attendee_phone="  " + phone + "  ")
+    assert response.status_code == 201
+    assert response.json()["attendee_phone"] == phone
+
+
+def test_booking_timestamps_keep_utc_through_create_read_and_payment(client, db_engine, buyer):
+    event_id, (sid,) = add_event(db_engine)
+    event = client.get(f"/api/events/{event_id}", headers=buyer).json()
+    event_session = next(item for item in event["sessions"] if item["id"] == sid)
+    created = book(client, buyer, sid).json()
+    assert created["paid_at"] is None
+    read = client.get(f"/api/bookings/{created['id']}", headers=buyer).json()
+    paid = pay(client, buyer, created["id"], "success").json()
+    reread = client.get(f"/api/bookings/{created['id']}", headers=buyer).json()
+    for body in (created, read, paid, reread):
+        for name in ("session_starts_at", "session_ends_at", "created_at", "paid_at"):
+            if body[name] is not None:
+                assert body[name].endswith("Z"), (name, body[name])
+                assert datetime.fromisoformat(body[name]).utcoffset() == timedelta(0)
+        for booking_name, event_name in (("session_starts_at", "starts_at"), ("session_ends_at", "ends_at")):
+            assert datetime.fromisoformat(body[booking_name]).replace(microsecond=0) == datetime.fromisoformat(event_session[event_name])
+    assert paid["paid_at"] == reread["paid_at"]
+
+
+@pytest.mark.parametrize("timestamp", [datetime(2026, 11, 10, 12, 0), datetime(2026, 11, 10, 19, 0, tzinfo=timezone(timedelta(hours=7)))])
+def test_booking_response_normalizes_naive_and_offset_timestamps(timestamp):
+    data = dict(id=1, reference="BK-TEST", event_id=1, event_title="Evening show", event_session_id=1,
+                quantity=1, unit_price_vnd=100000, total_price_vnd=100000, **ATTENDEE,
+                status="confirmed", session_starts_at=timestamp, session_ends_at=timestamp,
+                created_at=timestamp, paid_at=timestamp)
+    body = BookingRead(**data).model_dump(mode="json")
+    for name in ("session_starts_at", "session_ends_at", "created_at", "paid_at"):
+        assert body[name] == "2026-11-10T12:00:00Z"

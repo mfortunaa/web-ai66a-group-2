@@ -22,7 +22,7 @@ Authentication and event endpoints are implemented; booking endpoints are implem
   "attendee_email": "an@example.com", "attendee_phone": "0901234567" }
 ```
 
-Returns 201 with the booking below (200 when the same key and payload replay an existing booking; 409 when the key is reused with a different payload). Prices are always taken from the event; client-sent prices are ignored. Quantity must be a positive integer.
+Returns 201 with the booking below (200 when the same key and payload replay an existing booking; 409 when the key is reused with a different payload). Prices are always taken from the event; client-sent prices are ignored. Quantity must be a positive integer. Attendee phone numbers must contain 8–15 ASCII digits, with an optional leading `+` and spaces, dots, or hyphens as separators (at most 20 characters after trimming). Separators alone are invalid. All booking timestamps (`session_starts_at`, `session_ends_at`, `created_at`, and non-null `paid_at`) are serialized in UTC with a `Z` suffix; display them in `Asia/Ho_Chi_Minh`.
 
 ```json
 { "id": 7, "reference": "BK-3F9A1C2D", "event_id": 1, "event_title": "...", "event_session_id": 1,
