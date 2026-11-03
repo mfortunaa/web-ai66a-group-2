@@ -24,6 +24,8 @@ A simple web application for discovering events and booking tickets. Users can s
 
 ## Project Overview
 
+For a Docker demo with persistent SQLite and a local OTP/reset email inbox, follow [Docker Compose setup](docs/SETUP.md#docker-compose-developmentdemo-12). It serves the application at `http://localhost:8080` and Mailpit at `http://localhost:8025`.
+
 Eventy provides a straightforward event discovery and registration experience. The initial version focuses on the main booking journey:
 
 **Login → Event Catalog → Event Details → Booking Form → Simulated Payment → Confirmation**
