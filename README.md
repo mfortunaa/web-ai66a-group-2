@@ -32,7 +32,7 @@ Eventy provides a straightforward event discovery and registration experience. T
 
 Events are grouped into **On Sale** and **Coming Soon**. Users can filter events by date and sale status. Each event includes its description, time, location, ticket price, and availability.
 
-**Current status:** FastAPI foundation, SQLite user storage, registration/login, JWT authentication, authenticated event list/detail APIs, and the responsive event catalog/detail pages are implemented. Booking and simulated payment remain planned.
+**Current status:** FastAPI foundation, SQLite user storage, registration/login, JWT authentication, authenticated event list/detail and booking/payment APIs, and responsive catalog, booking, simulated-payment, and confirmation pages are implemented.
 
 ---
 
@@ -42,15 +42,15 @@ The frontend uses physical HTML pages and query parameters; the routes below are
 
 | Story ID | User Story                                                                                                  | Starting Point / Screen    | Proposed Route               |   Status    |
 | :------: | :---------------------------------------------------------------------------------------------------------- | :------------------------- | :--------------------------- | :---------: |
-| **US01** | Create an account and log in. | Login / Registration | `/index.html`, `/pages/register.html` | Implemented (catalog pending) |
+| **US01** | Create an account and log in. | Login / Registration | `/index.html`, `/pages/register.html` | Implemented |
 | **US02** | As a user, I want to browse On Sale and Coming Soon events so that I can find events of interest.           | Event Catalog              | `/events`                    | Implemented |
 | **US03** | As a user, I want to filter events by date and sale status so that I can narrow down the list.              | Catalog filters            | `/events`                    | Implemented |
 | **US04** | As a user, I want to view an event's description, time, venue, price, and availability before booking.      | Event Details              | `/events/:id`                | Implemented |
-| **US05** | As a user, I want to select a ticket quantity and enter attendee information so that I can place a booking. | Buy Tickets / Booking Form | `/events/:id/book`           | Not started |
-| **US06** | As a user, I want to complete a simulated payment so that I can confirm my booking.                         | Checkout                   | `/bookings/:id/payment`      | Not started |
-| **US07** | As a user, I want to see my booking reference and event summary after payment.                              | Booking Confirmation       | `/bookings/:id/confirmation` | Not started |
+| **US05** | As a user, I want to select a ticket quantity and enter attendee information so that I can place a booking. | Buy Tickets / Booking Form | `/events/:id/book`           | Implemented |
+| **US06** | As a user, I want to complete a simulated payment so that I can confirm my booking.                         | Checkout                   | `/bookings/:id/payment`      | Implemented |
+| **US07** | As a user, I want to see my booking reference and event summary after payment.                              | Booking Confirmation       | `/bookings/:id/confirmation` | Implemented |
 
-Implemented pages: `frontend/pages/events.html` and `frontend/pages/event-detail.html?event_id=<id>`. The booking entry link uses `frontend/pages/booking.html?event_id=<id>` when the booking page is available.
+Implemented pages use physical HTML files and query parameters: `frontend/pages/events.html`, `frontend/pages/event-detail.html?event_id=<id>`, `frontend/pages/booking.html?event_id=<id>`, `frontend/pages/payment.html?booking_id=<id>`, and `frontend/pages/confirmation.html?booking_id=<id>`.
 
 ---
 
@@ -115,6 +115,7 @@ web-ai66a-group-2/
 - [Proposed Database Design](docs/database.md)
 - [Backend Structure](backend/README.md)
 - [Setup Guide & Authentication Handoff](docs/SETUP.md)
+- [Midterm Demo Checklist](docs/demo.md)
 
 ---
 

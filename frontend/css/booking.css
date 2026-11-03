@@ -1,0 +1,37 @@
+.flow-main { max-width: 900px; padding-top: 28px; }
+.back-link { display: inline-flex; min-height: 44px; align-items: center; margin-bottom: 20px; color: var(--accent); font-weight: 600; }
+.eyebrow { margin: 0 0 8px; color: var(--accent); font-size: 12px; font-weight: 700; letter-spacing: .12em; }
+h1, h2, p { margin-top: 0; }
+h1 { margin-bottom: 18px; font-size: clamp(28px, 4vw, 36px); font-weight: 600; line-height: 1.2; letter-spacing: -.03em; }
+h2 { margin-bottom: 12px; font-size: 21px; font-weight: 600; line-height: 1.3; }
+.booking-layout { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); gap: 20px; align-items: start; padding: 8px 0 36px; }
+.event-summary, .booking-form { min-width: 0; padding: 24px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
+.event-summary h2 { overflow-wrap: anywhere; }
+.event-summary > p:not(.eyebrow):not(.ticket-price) { color: var(--muted); overflow-wrap: anywhere; }
+.ticket-price { display: flex; justify-content: space-between; gap: 12px; margin: 20px 0 0; padding-top: 16px; border-top: 1px solid var(--border); }
+.ticket-price span { color: var(--muted); }
+.ticket-price strong { text-align: right; }
+.form-help { margin-bottom: 20px; color: var(--muted); font-size: 14px; }
+.field + .field { margin-top: 16px; }
+.field label { display: block; margin-bottom: 8px; font-size: 14px; font-weight: 600; }
+.field input, .field select { display: block; width: 100%; min-width: 0; height: 44px; padding: 9px 11px; color: var(--text); background: var(--surface); border: 1px solid var(--control); border-radius: var(--radius); }
+.field input:hover, .field select:hover { border-color: var(--muted); }
+.field [aria-invalid='true'] { border-color: var(--negative); }
+.field small, .total-panel small { display: block; margin-top: 6px; color: var(--muted); font-size: 12px; }
+.total-panel { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; align-items: baseline; margin-top: 22px; padding: 16px; background: var(--raised); border-radius: var(--radius); }
+.total-panel > span { color: var(--muted); }
+.total-panel strong { font-size: 22px; text-align: right; }
+.total-panel small { grid-column: 1 / -1; }
+.form-message { margin: 14px 0 0; color: var(--negative); font-size: 14px; overflow-wrap: anywhere; }
+.form-message:empty { display: none; }
+.submit-button { width: 100%; margin-top: 16px; }
+.retry-button { width: 100%; margin-top: 10px; }
+.existing-booking { margin: 20px 0 36px; padding: 24px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
+.existing-booking p { color: var(--muted); }
+.existing-booking a, .existing-booking button { display: inline-flex; min-height: 44px; align-items: center; justify-content: center; margin: 8px 8px 0 0; text-decoration: none; }
+.site-footer { margin-top: 30px; }
+
+@media (max-width: 700px) {
+  .booking-layout { grid-template-columns: 1fr; gap: 14px; }
+  .event-summary, .booking-form { padding: 20px; }
+}
