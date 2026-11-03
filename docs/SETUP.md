@@ -2,7 +2,7 @@
 
 ## Requirements
 
-Python 3.10+ and two terminals. Run the following PowerShell commands from the repository root.
+Python 3.10+ and two terminals. The backend installs the `tzdata` timezone database package for `ZoneInfo` support on Windows. Run the following PowerShell commands from the repository root.
 
 ## 1. Install dependencies
 
@@ -14,6 +14,16 @@ python -c "import secrets; print(secrets.token_hex(32))"
 ```
 
 Replace the placeholder `SECRET_KEY` in `backend/.env` with the generated value. Do not commit `.env`. The app refuses to start with a missing or placeholder key. Keep the same key between restarts to preserve existing tokens.
+
+Seed sample events once before the demo. From the repository root:
+
+```powershell
+Set-Location backend
+..\.venv\Scripts\python -m scripts.seed_events
+Set-Location ..
+```
+
+The repeatable seed command adds or synchronizes the current sample events and their performance sessions. Before a presentation, run `python -m scripts.seed_events --refresh-demo-dates` from `backend/` to shift event dates to today while preserving the sample scenarios. Date refresh is blocked if it would change an event referenced by a booking; use a disposable demo database if you have test bookings. If you already ran an older version with fictional built-in samples, run `python -m scripts.seed_events --replace-old-samples` to remove only those known rows; the command refuses to remove referenced events.
 
 ## 2. Run the backend
 
