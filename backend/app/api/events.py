@@ -84,7 +84,8 @@ def list_events(
         ]
     elif sale_status == SaleStatusFilter.COMING_SOON:
         public_events = [
-            event for event in public_events
+            event
+            for event in public_events
             if event.sale_status.value == "coming_soon"
         ]
     return EventListResponse(items=public_events, total=len(public_events))

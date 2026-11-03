@@ -65,16 +65,19 @@ def test_event_routes_require_authentication(client):
     assert client.get("/api/events/1").status_code == 401
 
 
-def test_event_posters_are_served(client):
-    for path in (
-        "/assets/images/events/Ntpmm.webp",
-        "/assets/images/events/Traditional%20Water%20Puppet%20Show.webp",
-        "/assets/images/events/Workshop%20Tranh%20thực%20vật%20ép%20Botanical%20art.jpg",
-        "/assets/images/events/MERRY%20DECEMBER%20.jpg",
-    ):
-        response = client.get(path)
+def test_event_posters_are_served_from_seed_urls(client, db_engine):
+    from scripts.seed_events import seed_events
+
+    with Session(db_engine) as session:
+        seed_events(session)
+        seeded_urls = session.exec(select(Event.image_url)).all()
+
+    for image_url in seeded_urls:
+        response = client.get(image_url)
         assert response.status_code == 200
-        assert response.headers["content-type"].startswith("image/")
+        extension = image_url.rsplit(".", 1)[-1]
+        expected_content_type = "image/webp" if extension == "webp" else "image/jpeg"
+        assert response.headers["content-type"] == expected_content_type
 
 
 def test_list_events_returns_contract_and_computed_availability(client, db_engine):
@@ -101,8 +104,10 @@ def test_list_events_returns_contract_and_computed_availability(client, db_engin
         "ticket_price_vnd": 250_000,
         "capacity": 20,
         "tickets_sold": 4,
-        "available_tickets": 16,
+        "available_tickets": 0,
         "sale_status": "on_sale",
+        "is_bookable": False,
+        "booking_unavailable_reason": "schedule_not_defined",
         "sessions": [],
     }
 
@@ -232,6 +237,8 @@ def test_recurring_event_exposes_each_session_and_filters_by_session_date(
     assert event["sessions"][0]["starts_at"] == "2026-11-02T11:30:00Z"
     assert event["sessions"][-1]["ends_at"] == "2026-11-30T12:15:00Z"
     assert all(item["capacity"] == 30 for item in event["sessions"])
+    assert event["is_bookable"] is True
+    assert event["booking_unavailable_reason"] is None
 
     filtered = client.get(
         "/api/events?date_from=2026-11-15&date_to=2026-11-15",
@@ -240,6 +247,35 @@ def test_recurring_event_exposes_each_session_and_filters_by_session_date(
     assert [item["slug"] for item in filtered.json()["items"]] == [
         "traditional-water-puppet-show"
     ]
+
+
+def test_unscheduled_workshop_is_explicitly_not_bookable(client, db_engine):
+    from scripts.seed_events import seed_events
+
+    with Session(db_engine) as session:
+        seed_events(session)
+        workshop = session.exec(
+            select(Event).where(
+                Event.slug == "la-nha-garden-botanical-art-workshop"
+            )
+        ).one()
+        now = datetime.now(timezone.utc)
+        workshop.sales_open_at = now - timedelta(days=1)
+        workshop.sales_close_at = now + timedelta(days=1)
+        session.add(workshop)
+        session.commit()
+        workshop_id = workshop.id
+    headers = create_account(client)
+
+    response = client.get(f"/api/events/{workshop_id}", headers=headers)
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["sale_status"] == "on_sale"
+    assert body["available_tickets"] == 0
+    assert body["is_bookable"] is False
+    assert body["booking_unavailable_reason"] == "schedule_not_defined"
+    assert body["sessions"] == []
 
 
 def test_invalid_date_range_and_sale_status_are_rejected(client):
@@ -287,12 +323,12 @@ def test_seed_events_is_repeatable(db_engine):
     from scripts.seed_events import seed_events
 
     with Session(db_engine) as session:
-        assert seed_events(session) == 35
+        assert seed_events(session) == 41
         assert seed_events(session) == 0
 
     with Session(db_engine) as session:
         events = session.exec(select(Event)).all()
-        assert len(events) == 4
+        assert len(events) == 7
         on_sale = session.exec(
             select(Event).where(
                 Event.slug == "nhung-thanh-pho-mo-mang-year-end-2026"
@@ -336,11 +372,7 @@ def test_seed_events_is_repeatable(db_engine):
         ).one()
         assert botanical.ticket_price_vnd == 305_000
         assert botanical.capacity == 300
-        assert botanical.image_url == (
-            "/assets/images/events/Workshop%20Tranh%20"
-            "thu%CC%9B%CC%A3c%20va%CC%A3%CC%82t%20e%CC%81p%20"
-            "Botanical%20art.jpg"
-        )
+        assert botanical.image_url == "/assets/images/events/Workshop-Botanical-Art.webp"
         assert botanical.starts_at.replace(tzinfo=timezone.utc) == datetime(
             2026, 11, 1, 17, 0, tzinfo=timezone.utc
         )
@@ -363,6 +395,16 @@ def test_seed_events_is_repeatable(db_engine):
             2026, 12, 20, 13, 0, tzinfo=timezone.utc
         )
         assert merry_session.capacity == 500
+        for slug, expected_status in (
+            ("demo-coming-soon", SaleStatus.COMING_SOON),
+            ("demo-sold-out", SaleStatus.SOLD_OUT),
+            ("demo-closed", SaleStatus.CLOSED),
+        ):
+            event = session.exec(select(Event).where(Event.slug == slug)).one()
+            event_sessions = session.exec(
+                select(EventSession).where(EventSession.event_id == event.id)
+            ).all()
+            assert get_sale_status(event, NOW, event_sessions) == expected_status
 
 
 def test_seed_replacement_removes_old_samples_and_keeps_real_event(db_engine):
@@ -377,7 +419,7 @@ def test_seed_replacement_removes_old_samples_and_keeps_real_event(db_engine):
         )
         session.commit()
 
-        assert seed_events(session, replace_old_samples=True) == 37
+        assert seed_events(session, replace_old_samples=True) == 43
         assert seed_events(session, replace_old_samples=True) == 0
 
         events = session.exec(select(Event)).all()
@@ -386,6 +428,9 @@ def test_seed_replacement_removes_old_samples_and_keeps_real_event(db_engine):
             "traditional-water-puppet-show",
             "la-nha-garden-botanical-art-workshop",
             "merry-december-2026",
+            "demo-coming-soon",
+            "demo-sold-out",
+            "demo-closed",
         }
 
 
@@ -448,3 +493,30 @@ def test_seed_refuses_to_change_event_referenced_by_bookings(db_engine):
         session.refresh(event)
         assert event.ticket_price_vnd == 499_001
         assert event.title == original_title
+
+
+def test_refresh_demo_dates_moves_the_schedule_without_changing_statuses(db_engine):
+    from scripts.seed_events import seed_events
+
+    with Session(db_engine) as session:
+        seed_events(session)
+        seed_events(session, demo_date=date(2026, 11, 12))
+
+    with Session(db_engine) as session:
+        expected_events = (
+            ("demo-coming-soon", datetime(2026, 12, 12, 13, 0, tzinfo=timezone.utc),
+             SaleStatus.COMING_SOON),
+            ("demo-sold-out", datetime(2026, 11, 26, 13, 0, tzinfo=timezone.utc),
+             SaleStatus.SOLD_OUT),
+            ("demo-closed", datetime(2026, 11, 11, 13, 0, tzinfo=timezone.utc),
+             SaleStatus.CLOSED),
+        )
+        for slug, expected_start, expected_status in expected_events:
+            event = session.exec(select(Event).where(Event.slug == slug)).one()
+            assert event.starts_at.replace(tzinfo=timezone.utc) == expected_start
+            event_sessions = session.exec(
+                select(EventSession).where(EventSession.event_id == event.id)
+            ).all()
+            assert get_sale_status(
+                event, NOW + timedelta(days=10), event_sessions
+            ) == expected_status

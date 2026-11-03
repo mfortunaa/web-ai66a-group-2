@@ -1,5 +1,6 @@
 import argparse
-from datetime import datetime, timezone
+from datetime import date, datetime, timedelta, timezone
+from zoneinfo import ZoneInfo
 
 from sqlalchemy import MetaData, Table, func, inspect, select as sqlalchemy_select
 from sqlmodel import Session, select
@@ -13,9 +14,13 @@ LEGACY_SAMPLE_SLUGS = (
     "creative-weekend",
     "hanoi-night-run",
 )
+DEMO_BASE_DATE = date(2026, 11, 2)
+HO_CHI_MINH = ZoneInfo("Asia/Ho_Chi_Minh")
 
 
-def demo_events() -> list[tuple[Event, list[EventSession]]]:
+def demo_events(
+    demo_date: date | None = None,
+) -> list[tuple[Event, list[EventSession]]]:
     music_start = datetime(2027, 1, 17, 9, 0, tzinfo=timezone.utc)
     music_end = datetime(2027, 1, 17, 15, 30, tzinfo=timezone.utc)
     botanical_start = datetime(2026, 11, 1, 17, 0, tzinfo=timezone.utc)
@@ -31,7 +36,7 @@ def demo_events() -> list[tuple[Event, list[EventSession]]]:
         )
         for day in range(29)
     ]
-    return [
+    events = [
         (
             Event(
                 slug="nhung-thanh-pho-mo-mang-year-end-2026",
@@ -97,11 +102,7 @@ def demo_events() -> list[tuple[Event, list[EventSession]]]:
                     "tranh, nền tranh, hoa/lá/cành thực vật ép, keo hoặc vật "
                     "liệu cố định, nhíp, kéo và dụng cụ hoàn thiện."
                 ),
-                image_url=(
-                    "/assets/images/events/Workshop%20Tranh%20"
-                    "thu%CC%9B%CC%A3c%20va%CC%A3%CC%82t%20e%CC%81p%20"
-                    "Botanical%20art.jpg"
-                ),
+                image_url="/assets/images/events/Workshop-Botanical-Art.webp",
                 venue="Lá Nhà Garden",
                 address=(
                     "356/6/12 đường Bạch Đằng, Phường Bình Thạnh, "
@@ -142,7 +143,99 @@ def demo_events() -> list[tuple[Event, list[EventSession]]]:
                 )
             ],
         ),
+        (
+            Event(
+                slug="demo-coming-soon",
+                title="[DEMO] Coming Soon",
+                description="Event mẫu để minh họa trạng thái sắp mở bán.",
+                image_url="/assets/images/events/Ntpmm.webp",
+                venue="Demo venue",
+                address="Hà Nội",
+                starts_at=datetime(2026, 12, 2, 13, 0, tzinfo=timezone.utc),
+                ends_at=datetime(2026, 12, 2, 15, 0, tzinfo=timezone.utc),
+                sales_open_at=datetime(2026, 11, 10, 17, 0, tzinfo=timezone.utc),
+                sales_close_at=datetime(2026, 12, 2, 13, 0, tzinfo=timezone.utc),
+                ticket_price_vnd=100_000,
+                capacity=50,
+                tickets_sold=0,
+            ),
+            [
+                EventSession(
+                    starts_at=datetime(2026, 12, 2, 13, 0, tzinfo=timezone.utc),
+                    ends_at=datetime(2026, 12, 2, 15, 0, tzinfo=timezone.utc),
+                    capacity=50,
+                    tickets_sold=0,
+                )
+            ],
+        ),
+        (
+            Event(
+                slug="demo-sold-out",
+                title="[DEMO] Sold Out",
+                description="Event mẫu để minh họa trạng thái đã hết vé.",
+                image_url=(
+                    "/assets/images/events/"
+                    "Traditional%20Water%20Puppet%20Show.webp"
+                ),
+                venue="Demo venue",
+                address="Thành phố Hồ Chí Minh",
+                starts_at=datetime(2026, 11, 16, 13, 0, tzinfo=timezone.utc),
+                ends_at=datetime(2026, 11, 16, 15, 0, tzinfo=timezone.utc),
+                sales_open_at=datetime(2026, 11, 1, 17, 0, tzinfo=timezone.utc),
+                sales_close_at=datetime(2026, 11, 16, 13, 0, tzinfo=timezone.utc),
+                ticket_price_vnd=100_000,
+                capacity=50,
+                tickets_sold=50,
+            ),
+            [
+                EventSession(
+                    starts_at=datetime(2026, 11, 16, 13, 0, tzinfo=timezone.utc),
+                    ends_at=datetime(2026, 11, 16, 15, 0, tzinfo=timezone.utc),
+                    capacity=50,
+                    tickets_sold=50,
+                )
+            ],
+        ),
+        (
+            Event(
+                slug="demo-closed",
+                title="[DEMO] Closed",
+                description="Event mẫu để minh họa trạng thái đã đóng bán.",
+                image_url="/assets/images/events/MERRY%20DECEMBER%20.jpg",
+                venue="Demo venue",
+                address="Hà Nội",
+                starts_at=datetime(2026, 11, 1, 13, 0, tzinfo=timezone.utc),
+                ends_at=datetime(2026, 11, 1, 15, 0, tzinfo=timezone.utc),
+                sales_open_at=datetime(2026, 10, 25, 17, 0, tzinfo=timezone.utc),
+                sales_close_at=datetime(2026, 11, 1, 13, 0, tzinfo=timezone.utc),
+                ticket_price_vnd=100_000,
+                capacity=50,
+                tickets_sold=0,
+            ),
+            [
+                EventSession(
+                    starts_at=datetime(2026, 11, 1, 13, 0, tzinfo=timezone.utc),
+                    ends_at=datetime(2026, 11, 1, 15, 0, tzinfo=timezone.utc),
+                    capacity=50,
+                    tickets_sold=0,
+                )
+            ],
+        ),
     ]
+    if demo_date is not None:
+        day_shift = demo_date - DEMO_BASE_DATE
+        for event, event_sessions in events:
+            for field in (
+                "starts_at",
+                "ends_at",
+                "sales_open_at",
+                "sales_close_at",
+            ):
+                setattr(event, field, getattr(event, field) + day_shift)
+            for event_session in event_sessions:
+                event_session.starts_at += day_shift
+                event_session.ends_at += day_shift
+    return events
 
 
 def _ensure_unreferenced_events(session: Session, slugs: tuple[str, ...]) -> None:
@@ -257,7 +350,11 @@ def _ensure_seed_update_safe(
     return existing_sessions
 
 
-def seed_events(session: Session, replace_old_samples: bool = False) -> int:
+def seed_events(
+    session: Session,
+    replace_old_samples: bool = False,
+    demo_date: date | None = None,
+) -> int:
     changed = 0
     if replace_old_samples:
         _ensure_unreferenced_events(session, LEGACY_SAMPLE_SLUGS)
@@ -268,7 +365,7 @@ def seed_events(session: Session, replace_old_samples: bool = False) -> int:
             session.delete(event)
             changed += 1
 
-    for sample, sample_sessions in demo_events():
+    for sample, sample_sessions in demo_events(demo_date):
         existing = session.exec(
             select(Event).where(Event.slug == sample.slug)
         ).first()
@@ -338,11 +435,23 @@ def main() -> None:
         action="store_true",
         help="Remove previous built-in sample events before seeding the selected events.",
     )
+    parser.add_argument(
+        "--refresh-demo-dates",
+        action="store_true",
+        help="Shift seeded event dates to today while preserving their relative demo schedule.",
+    )
     args = parser.parse_args()
 
     create_db_and_tables()
     with Session(engine) as session:
-        changed = seed_events(session, replace_old_samples=args.replace_old_samples)
+        demo_date = (
+            datetime.now(HO_CHI_MINH).date() if args.refresh_demo_dates else None
+        )
+        changed = seed_events(
+            session,
+            replace_old_samples=args.replace_old_samples,
+            demo_date=demo_date,
+        )
     print(f"Event seed complete; added or removed {changed} event/session record(s).")
 
 

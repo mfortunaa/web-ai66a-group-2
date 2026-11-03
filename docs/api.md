@@ -37,6 +37,8 @@ Authentication and event endpoints are implemented; booking endpoints remain pla
       "tickets_sold": 0,
       "available_tickets": 1000,
       "sale_status": "on_sale",
+      "is_bookable": true,
+      "booking_unavailable_reason": null,
       "sessions": [
         {
           "id": 1,
@@ -54,9 +56,13 @@ Authentication and event endpoints are implemented; booking endpoints remain pla
 }
 ```
 
-`GET /api/events/{event_id}` returns one event with the same fields (without the list envelope). `sessions` contains the dated performances with independent capacity and availability; `is_bookable` is false for past, sold-out, or not-currently-on-sale sessions. A single-date event has one session. Event-level capacity and sold counts total its sessions when sessions are defined. A booking must send the chosen `event_session_id` so tickets are counted against the correct performance; events without a defined session schedule are not ready for session-based booking. `sale_status` is computed when the request is made and is one of `on_sale`, `coming_soon`, `sold_out`, or `closed`. Event-level `available_tickets` sums remaining tickets for future sessions; when an event has no sessions yet, it uses the event-level capacity and sold count. `sale_status` filtering accepts `on_sale` and `coming_soon`; sold-out and closed events remain available in an unfiltered catalog response so the UI can explain why tickets cannot be purchased.
+`GET /api/events/{event_id}` returns one event with the same fields (without the list envelope). `sessions` contains dated performances with independent capacity and availability; each session's `is_bookable` is false for past, sold-out, or not-currently-on-sale sessions. Event-level `is_bookable` is true only when at least one session can currently be booked. When false, `booking_unavailable_reason` explains why (`schedule_not_defined`, `coming_soon`, `sold_out`, `closed`, or `no_available_sessions`). Frontends must use `is_bookable`, not `sale_status` or a positive event capacity by itself, to enable buying. Events with no schedule have `available_tickets: 0` and are not bookable.
 
-The current sample catalog also contains “[LÁ NHÀ GARDEN] Workshop Tranh thực vật ép Botanical art” and “MERRY DECEMBER”. The workshop is listed across 2 November–31 December 2026 without individual session times because none were provided; its 300-ticket capacity is a demo estimate. It currently has no bookable sessions, so provide its actual schedule before enabling session-based booking. “MERRY DECEMBER” is scheduled for 20 December 2026, 20:00–22:00 at Trung tâm TT Sự kiện Cung Xuân, with 500 demo tickets. These local schedules are returned as UTC timestamps; display them in `Asia/Ho_Chi_Minh`.
+Event-level capacity and sold counts total its sessions when sessions are defined. A booking page keeps using `event_id` in its URL to load the event, as specified by issue #4/#5. When creating the booking, issue #3 must send the selected `event_session_id` equal to one of the returned `sessions[].id`; session-based booking is not available for events without sessions. `sale_status` is computed when the request is made and is one of `on_sale`, `coming_soon`, `sold_out`, or `closed`. Event-level `available_tickets` sums remaining tickets for future sessions. `sale_status` filtering accepts `on_sale` and `coming_soon`; sold-out and closed events remain available in an unfiltered catalog response so the UI can explain why tickets cannot be purchased.
+
+The current sample catalog also contains “[LÁ NHÀ GARDEN] Workshop Tranh thực vật ép Botanical art” and “MERRY DECEMBER”. The workshop is listed across 2 November–31 December 2026 without individual session times because none were provided; its 300-ticket capacity is a demo estimate, `available_tickets` is 0, `is_bookable` is false, and `booking_unavailable_reason` is `schedule_not_defined`. Provide its actual schedule before enabling session-based booking. “MERRY DECEMBER” is scheduled for 20 December 2026, 20:00–22:00 at Trung tâm TT Sự kiện Cung Xuân, with 500 demo tickets. These local schedules are returned as UTC timestamps; display them in `Asia/Ho_Chi_Minh`.
+
+The seed also includes explicitly labeled `[DEMO]` events for the `coming_soon`, `sold_out`, and `closed` states. They exist only to demonstrate catalog states and are not real event listings. Before a presentation, run `python -m scripts.seed_events --refresh-demo-dates` from `backend/` to shift event/session dates to the current Ho Chi Minh City date while preserving those states. This command refuses to shift dates when doing so would alter an event referenced by a booking.
 
 ## Conventions
 

@@ -1,4 +1,5 @@
 from contextlib import asynccontextmanager
+import mimetypes
 from pathlib import Path
 
 from fastapi import FastAPI
@@ -9,6 +10,8 @@ from app.api.auth import router as auth_router
 from app.api.events import router as events_router
 from app.core.config import get_settings
 from app.db.session import create_db_and_tables
+
+mimetypes.add_type("image/webp", ".webp")
 
 
 @asynccontextmanager

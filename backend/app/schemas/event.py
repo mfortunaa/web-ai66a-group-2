@@ -61,6 +61,8 @@ class EventPublic(BaseModel):
     tickets_sold: int
     available_tickets: int
     sale_status: SaleStatus
+    is_bookable: bool
+    booking_unavailable_reason: str | None
     sessions: list[EventSessionPublic]
 
     @field_validator("starts_at", "ends_at", "sales_open_at", "sales_close_at")

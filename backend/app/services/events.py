@@ -56,8 +56,20 @@ def event_to_public(
             if as_utc(item.starts_at) > current_time
         )
         if event_sessions
-        else max(event.capacity - event.tickets_sold, 0)
+        else 0
     )
+    is_bookable = sale_status == SaleStatus.ON_SALE and any(
+        as_utc(item.starts_at) > current_time and item.tickets_sold < item.capacity
+        for item in event_sessions
+    )
+    if is_bookable:
+        booking_unavailable_reason = None
+    elif not event_sessions:
+        booking_unavailable_reason = "schedule_not_defined"
+    elif sale_status != SaleStatus.ON_SALE:
+        booking_unavailable_reason = sale_status.value
+    else:
+        booking_unavailable_reason = "no_available_sessions"
     return EventPublic(
         id=event.id,
         slug=event.slug,
@@ -75,6 +87,8 @@ def event_to_public(
         tickets_sold=event.tickets_sold,
         available_tickets=available_tickets,
         sale_status=sale_status,
+        is_bookable=is_bookable,
+        booking_unavailable_reason=booking_unavailable_reason,
         sessions=[
             EventSessionPublic(
                 id=item.id,
