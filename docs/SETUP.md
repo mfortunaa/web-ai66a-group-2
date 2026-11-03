@@ -15,16 +15,6 @@ python -c "import secrets; print(secrets.token_hex(32))"
 
 Replace the placeholder `SECRET_KEY` in `backend/.env` with the generated value. Do not commit `.env`. The app refuses to start with a missing or placeholder key. Keep the same key between restarts to preserve existing tokens.
 
-Seed sample events once before the demo. From the repository root:
-
-```powershell
-Set-Location backend
-..\.venv\Scripts\python -m scripts.seed_events
-Set-Location ..
-```
-
-The repeatable seed command adds or synchronizes the current real sample events and their performance sessions. It refuses to change a seeded event referenced by a booking. If you already ran an older version that inserted fictional sample events, run `python -m scripts.seed_events --replace-old-samples` from `backend/` to remove only those known sample rows; it refuses to remove any sample event referenced by a booking. Event dates remain the supplied demo dates and are not automatically shifted.
-
 ## 2. Run the backend
 
 ```powershell
