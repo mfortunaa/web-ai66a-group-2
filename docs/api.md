@@ -1,6 +1,6 @@
 # Proposed API
 
-Authentication and event endpoints are implemented; booking endpoints remain planned. See [setup and authentication examples](SETUP.md). Prefix application routes with `/api`. Require a bearer JWT on event and booking routes.
+Authentication and event endpoints are implemented; booking endpoints are implemented. See [setup and authentication examples](SETUP.md). Prefix application routes with `/api`. Require a bearer JWT on event and booking routes.
 
 | Method | Endpoint | Purpose | Success |
 | --- | --- | --- | --- |
@@ -12,6 +12,27 @@ Authentication and event endpoints are implemented; booking endpoints remain pla
 | POST | `/api/bookings` | Create a pending booking with event session ID, quantity, and attendee details | 201 |
 | GET | `/api/bookings/{booking_id}` | Return an owned booking and confirmation details | 200 |
 | POST | `/api/bookings/{booking_id}/simulate-payment` | Simulate success or failure; confirm and consume stock on success | 200 |
+
+## Booking API contract
+
+`POST /api/bookings` (optional header `Idempotency-Key`, 8–128 chars, unique per user):
+
+```json
+{ "event_session_id": 1, "quantity": 2, "attendee_name": "An Nguyen",
+  "attendee_email": "an@example.com", "attendee_phone": "0901234567" }
+```
+
+Returns 201 with the booking below (200 when the same key and payload replay an existing booking; 409 when the key is reused with a different payload). Prices are always taken from the event; client-sent prices are ignored. Quantity must be a positive integer.
+
+```json
+{ "id": 7, "reference": "BK-3F9A1C2D", "event_id": 1, "event_title": "...", "event_session_id": 1,
+  "session_starts_at": "2027-01-17T09:00:00Z", "session_ends_at": "2027-01-17T15:30:00Z",
+  "quantity": 2, "unit_price_vnd": 499000, "total_price_vnd": 998000,
+  "attendee_name": "An Nguyen", "attendee_email": "an@example.com", "attendee_phone": "0901234567",
+  "status": "pending", "created_at": "...", "paid_at": null }
+```
+
+`POST /api/bookings/{id}/simulate-payment` takes `{"outcome": "success" | "failure"}` and returns the booking. `pending → confirmed | payment_failed`; `payment_failed` may retry; `confirmed` is terminal (repeated success or failure returns it unchanged, without another stock change or a new `paid_at`). Success rechecks the sales window, the session start time and the session stock, then updates the booking and stock in one transaction; if tickets ran out it returns 409 and the booking stays unconfirmed. A booking owned by another user returns 403. Errors use `{"detail": "<message>"}`.
 
 ## Event API contract
 

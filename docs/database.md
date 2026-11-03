@@ -1,13 +1,13 @@
 # Proposed Database Design
 
-Use SQLite and SQLModel for the first version. The User table is implemented as `users`, and the Event table is implemented as `events`. Booking remains planned. User profile and authentication are documented in [SETUP.md](SETUP.md).
+Use SQLite and SQLModel for the first version. The User table is implemented as `users`, and the Event table is implemented as `events`. Booking is implemented as `bookings`. User profile and authentication are documented in [SETUP.md](SETUP.md).
 
 | Entity | Main fields |
 | --- | --- |
 | User | id, full_name, email (unique), password_hash, created_at |
 | Event | id, slug (unique), title, description, image_url, venue, address, starts_at, ends_at, sales_open_at, sales_close_at, ticket_price_vnd, total capacity, total tickets_sold |
 | EventSession | id, event_id, starts_at, ends_at, capacity, tickets_sold |
-| Booking | id, reference (unique), user_id, event_id, event_session_id, quantity, attendee_name, attendee_email, attendee_phone, unit_price_vnd, total_price_vnd, status, created_at, paid_at |
+| Booking | id, reference (unique), user_id, event_id, event_session_id, quantity, attendee_name, attendee_email, attendee_phone, unit_price_vnd, total_price_vnd, status, request_key (nullable), request_fingerprint (nullable), created_at, updated_at, paid_at |
 
 ## Relationships
 
@@ -19,6 +19,8 @@ Use SQLite and SQLModel for the first version. The User table is implemented as 
 ## Rules
 
 - Booking status is `pending`, `confirmed`, or `payment_failed`.
+- `(user_id, request_key)` is unique when a key is sent, so a retried creation request returns the same booking instead of a duplicate.
+- Confirmation increases `tickets_sold` on both the selected `event_sessions` row and the `events` total in one transaction.
 - Store the unit price and total on the booking to preserve the price at checkout.
 - Use integer VND amounts and positive ticket quantities.
 - Available tickets equal `capacity - tickets_sold`; the result must never be negative.

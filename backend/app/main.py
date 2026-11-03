@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from app.api.auth import router as auth_router
+from app.api.bookings import router as bookings_router
 from app.api.events import router as events_router
 from app.core.config import get_settings
 from app.db.session import create_db_and_tables
@@ -25,10 +26,11 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=get_settings().cors_origins,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allow_headers=["Authorization", "Content-Type"],
+    allow_headers=["Authorization", "Content-Type", "Idempotency-Key"],
 )
 app.include_router(auth_router)
 app.include_router(events_router)
+app.include_router(bookings_router)
 
 
 @app.get("/health", tags=["Health"])

@@ -5,7 +5,9 @@ import pytest
 from sqlalchemy import text
 from sqlmodel import Session, select
 
+from app.models.booking import Booking
 from app.models.event import Event, EventSession
+from app.models.user import User
 from app.schemas.event import SaleStatus
 from app.services.events import get_sale_status
 
@@ -450,6 +452,22 @@ def test_seed_replacement_removes_old_samples_and_keeps_real_event(db_engine):
         }
 
 
+def add_booking_for(session: Session, event: Event) -> None:
+    """Insert a real booking so seed-protection tests use the actual `bookings` table."""
+    user = User(full_name="Booking Owner", email=f"owner-{event.id}@example.com", password_hash="x")
+    session.add(user)
+    event_session = session.exec(select(EventSession).where(EventSession.event_id == event.id)).first()
+    if event_session is None:
+        event_session = EventSession(event_id=event.id, starts_at=event.starts_at, ends_at=event.ends_at, capacity=1)
+        session.add(event_session)
+    session.flush()
+    session.add(Booking(
+        reference=f"BK-SEED{event.id:04d}", user_id=user.id, event_id=event.id, event_session_id=event_session.id,
+        quantity=1, attendee_name="Owner", attendee_email="owner@example.com", attendee_phone="0901234567",
+        unit_price_vnd=0, total_price_vnd=0,
+    ))
+
+
 def test_seed_replacement_refuses_to_remove_samples_with_bookings(db_engine):
     from scripts.seed_events import seed_events
 
@@ -458,17 +476,7 @@ def test_seed_replacement_refuses_to_remove_samples_with_bookings(db_engine):
         session.add(old_event)
         session.commit()
         original_start = old_event.starts_at
-        session.execute(
-            text(
-                "CREATE TABLE bookings ("
-                "id INTEGER PRIMARY KEY, event_id INTEGER NOT NULL "
-                "REFERENCES events(id))"
-            )
-        )
-        session.execute(
-            text("INSERT INTO bookings (event_id) VALUES (:event_id)"),
-            {"event_id": old_event.id},
-        )
+        add_booking_for(session, old_event)
         session.commit()
 
         with pytest.raises(RuntimeError, match="bookings reference them"):
@@ -489,17 +497,7 @@ def test_seed_refuses_to_change_event_referenced_by_bookings(db_engine):
             )
         ).one()
         original_title = event.title
-        session.execute(
-            text(
-                "CREATE TABLE bookings ("
-                "id INTEGER PRIMARY KEY, event_id INTEGER NOT NULL "
-                "REFERENCES events(id))"
-            )
-        )
-        session.execute(
-            text("INSERT INTO bookings (event_id) VALUES (:event_id)"),
-            {"event_id": event.id},
-        )
+        add_booking_for(session, event)
         event.ticket_price_vnd += 1
         session.commit()
 
