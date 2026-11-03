@@ -1,4 +1,5 @@
 from datetime import date, datetime, timedelta, timezone
+import sys
 
 import pytest
 from sqlalchemy import text
@@ -9,6 +10,21 @@ from app.schemas.event import SaleStatus
 from app.services.events import get_sale_status
 
 NOW = datetime(2026, 11, 2, 12, 0, tzinfo=timezone.utc)
+
+
+class FrozenDatetime(datetime):
+    @classmethod
+    def now(cls, tz=None):
+        return NOW.astimezone(tz) if tz is not None else NOW.replace(tzinfo=None)
+
+
+@pytest.fixture(autouse=True)
+def fixed_event_clock(monkeypatch):
+    # Event fixtures must not change sale status when tests run on a later date.
+    # Authentication retains its real clock so issued JWTs remain valid.
+    monkeypatch.setattr("app.api.events.datetime", FrozenDatetime)
+    monkeypatch.setattr("app.services.events.datetime", FrozenDatetime)
+    monkeypatch.setattr(sys.modules[__name__], "datetime", FrozenDatetime)
 
 
 def create_account(client, email="event-tester@example.com"):
