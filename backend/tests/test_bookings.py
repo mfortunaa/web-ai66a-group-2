@@ -1,3 +1,4 @@
+import re
 import threading
 from datetime import datetime, timedelta, timezone
 
@@ -49,6 +50,8 @@ def stock(engine, event_id, session_id):
 
 def login(client, email="buyer@example.com"):
     client.post("/api/auth/register", json={"full_name": "Buyer", "email": email, "password": "password123"})
+    code = re.search(r"\b[0-9]{6}\b", client.outbox[-1][2]).group()
+    assert client.post("/api/auth/verify-email", json={"email": email, "code": code}).status_code == 200
     token = client.post("/api/auth/token", data={"username": email, "password": "password123"}).json()["access_token"]
     return {"Authorization": f"Bearer {token}"}
 

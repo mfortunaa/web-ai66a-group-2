@@ -10,4 +10,6 @@ class User(SQLModel, table=True):
     full_name: str = Field(max_length=100)
     email: str = Field(index=True, unique=True, max_length=254)
     password_hash: str
+    is_email_verified: bool = False
+    token_version: int = 0
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))

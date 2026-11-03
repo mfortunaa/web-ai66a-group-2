@@ -28,6 +28,26 @@ class UserPublic(BaseModel):
     id: int
     full_name: str
     email: EmailStr
+    is_email_verified: bool
+
+
+class RegistrationResponse(UserPublic):
+    verification_delivery: str
+
+
+class EmailRequest(BaseModel):
+    email: EmailStr
+
+
+class VerifyRequest(EmailRequest):
+    code: str = Field(pattern=r"^[0-9]{6}$")
+
+
+class ResetRequest(BaseModel):
+    token: str = Field(min_length=20, max_length=256)
+    password: str = Field(min_length=8, max_length=72)
+
+    _password_rules = field_validator("password")(RegisterRequest.validate_password.__func__)
 
 
 class TokenResponse(BaseModel):

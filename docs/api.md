@@ -99,3 +99,14 @@ The seed also includes explicitly labeled `[DEMO]` events for the `coming_soon`,
 - A repeated successful payment request returns the existing confirmation without another stock change.
 - Enable CORS for the local frontend origin during development.
 - FastAPI provides interactive API documentation at `/docs`.
+
+## Authentication verification and recovery (#6)
+
+The final request/response examples, defaults and error contracts are in [auth-contract.md](auth-contract.md). Registration returns the public user plus `is_email_verified: false` and `verification_delivery: "sent" | "retry"`; `/me` includes `is_email_verified`. Clients must verify email before requesting a token.
+
+- `POST /api/auth/verify-email`: JSON `{ "email": "an@example.com", "code": "123456" }`.
+- `POST /api/auth/resend-verification`: JSON `{ "email": "an@example.com" }`.
+- `POST /api/auth/forgot-password`: JSON `{ "email": "an@example.com" }`.
+- `POST /api/auth/reset-password`: JSON `{ "token": "emailed-token", "password": "replacement123" }`.
+
+Wrong credentials return 401. Only correct credentials can return 403 with `detail.code=email_not_verified` and `detail.action=verify-email`. Invalid/expired/used challenges return 400 with `detail.code=invalid_challenge`. Rate limits return 429 with `detail.code=rate_limited`, integer `detail.retry_after` seconds and the exposed `Retry-After` header. An eligible resend whose SMTP send fails returns 503 `delivery_failed`; registration remains saved if delivery fails. Recovery requests always return the same 200 message for known/unknown emails and SMTP failures. Reset uses registration's password rules, revokes all earlier JWTs, and does not log in automatically.

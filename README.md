@@ -59,7 +59,7 @@ The routes below are proposed frontend routes and may change during implementati
 - Input validation, server-side price calculation, and availability checks.
 - Simulated payment and booking confirmation.
 
-Events will initially be populated using seed data. Real payment integration, seat selection, email delivery, and an admin dashboard are outside the initial scope. No real payment credentials will be collected.
+Events will initially be populated using seed data. Email verification, password recovery, and persistent auth limits extend the initial scope in #6. Real payment integration, seat selection, and an admin dashboard remain outside the scope. No real payment credentials will be collected.
 
 ---
 
@@ -124,7 +124,7 @@ With Python 3 installed, run the following command from the repository root:
 python -m http.server 5500 --directory frontend
 ```
 
-Open [http://localhost:5500](http://localhost:5500) to use the login page. Start the backend first to register and sign in.
+Open [http://localhost:5500](http://localhost:5500) to use the login page. Start the backend and the local SMTP inbox first, then register, verify the emailed OTP, and sign in. See [email setup and database migration](docs/SETUP.md#email-verification-and-password-recovery-6).
 
 ### Backend Setup
 

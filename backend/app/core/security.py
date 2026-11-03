@@ -28,11 +28,11 @@ def verify_password(password: str, password_hash: str) -> bool:
         return False
 
 
-def create_access_token(user_id: int) -> str:
+def create_access_token(user_id: int, token_version: int = 0) -> str:
     settings = get_settings()
     now = datetime.now(timezone.utc)
     return jwt.encode(
-        {"sub": str(user_id), "iat": now, "exp": now + timedelta(minutes=settings.access_token_expire_minutes)},
+        {"sub": str(user_id), "ver": token_version, "iat": now, "exp": now + timedelta(minutes=settings.access_token_expire_minutes)},
         settings.secret_key,
         algorithm="HS256",
     )
@@ -50,7 +50,7 @@ def get_current_user(
     try:
         payload = jwt.decode(
             token, get_settings().secret_key, algorithms=["HS256"],
-            options={"require": ["sub", "exp", "iat"]},
+            options={"require": ["sub", "exp", "iat", "ver"]},
         )
         user_id = int(payload["sub"])
         if user_id <= 0:
@@ -58,6 +58,6 @@ def get_current_user(
     except (jwt.InvalidTokenError, ValueError, TypeError):
         raise unauthorized
     user = session.get(User, user_id)
-    if user is None:
+    if user is None or not user.is_email_verified or payload["ver"] != user.token_version:
         raise unauthorized
     return user

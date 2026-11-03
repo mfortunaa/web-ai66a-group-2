@@ -11,10 +11,11 @@ from app.models.user import User
 ACCOUNT = {"full_name": "  Nguyen An  ", "email": "An@example.com", "password": "password123"}
 
 
-def test_registration_login_and_profile(client, db_engine):
+def test_registration_login_and_profile(client, db_engine, verify_account):
     response = client.post("/api/auth/register", json=ACCOUNT)
     assert response.status_code == 201
-    assert response.json() == {"id": 1, "full_name": "Nguyen An", "email": "an@example.com"}
+    assert response.json() == {"id": 1, "full_name": "Nguyen An", "email": "an@example.com", "is_email_verified": False, "verification_delivery": "sent"}
+    verify_account("an@example.com")
     with Session(db_engine) as session:
         user = session.exec(select(User)).one()
         assert user.password_hash != ACCOUNT["password"]
@@ -25,7 +26,7 @@ def test_registration_login_and_profile(client, db_engine):
     assert token.json()["expires_in"] > 0
     me = client.get("/api/auth/me", headers={"Authorization": f"Bearer {token.json()['access_token']}"})
     assert me.status_code == 200
-    assert me.json() == response.json()
+    assert me.json() == {"id": 1, "full_name": "Nguyen An", "email": "an@example.com", "is_email_verified": True}
 
 
 def test_duplicate_email_case_insensitive(client):
