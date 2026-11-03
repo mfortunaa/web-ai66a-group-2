@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Thông tin chi tiết sự kiện trên Eventy.">
+  <title>Chi tiết sự kiện | Eventy</title>
+  <link rel="stylesheet" href="../css/common.css">
+  <link rel="stylesheet" href="../css/event-detail.css">
+  <script type="module" src="../js/event-detail.js"></script>
+</head>
+<body>
+  <div class="site-shell">
+    <header class="site-header">
+      <a class="brand" href="events.html" aria-label="Eventy – Khám phá sự kiện">
+        <svg class="brand-mark" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h18v5a2 2 0 0 0 0 4v5H3v-5a2 2 0 0 0 0-4V5Z"/><path d="M15 5v14" stroke-dasharray="2 2"/></svg>
+        <span>eventy</span>
+      </a>
+      <nav class="site-nav" aria-label="Điều hướng chính">
+        <a class="nav-link" href="events.html">Sự kiện</a>
+        <button id="logout" class="secondary" type="button">Đăng xuất</button>
+      </nav>
+    </header>
+
+    <main class="detail-main">
+      <a class="back-link" href="events.html">← Quay lại danh sách</a>
+      <p id="page-message" class="page-message" role="status" aria-live="polite">Đang tải thông tin sự kiện…</p>
+      <button id="retry" class="button-secondary retry-button" type="button" hidden>Thử lại</button>
+
+      <article id="event-content" hidden>
+        <div class="detail-layout">
+          <figure class="detail-poster">
+            <img id="event-image" alt="">
+            <figcaption id="poster-fallback" hidden>Chưa có ảnh sự kiện</figcaption>
+          </figure>
+          <div class="detail-summary">
+            <p id="event-status" class="status-pill"></p>
+            <h1 id="event-title"></h1>
+            <p id="event-time" class="event-time"></p>
+            <p id="event-venue" class="event-venue"></p>
+            <p id="event-address" class="event-address"></p>
+            <div class="price-panel">
+              <span>Giá vé</span>
+              <strong id="event-price"></strong>
+              <span id="event-availability"></span>
+            </div>
+            <p id="sales-opening" class="sales-opening" hidden></p>
+            <p id="booking-note" class="booking-note" hidden></p>
+            <a id="buy-tickets" class="button-primary buy-button" href="booking.html" hidden>Mua vé</a>
+          </div>
+        </div>
+
+        <section class="detail-section" aria-labelledby="description-heading">
+          <h2 id="description-heading">Về sự kiện</h2>
+          <p id="event-description" class="event-description"></p>
+        </section>
+        <section id="sessions-section" class="detail-section" aria-labelledby="sessions-heading" hidden>
+          <h2 id="sessions-heading">Lịch diễn</h2>
+          <ul id="event-sessions" class="session-list"></ul>
+        </section>
+      </article>
+    </main>
+
+    <footer class="site-footer">Eventy · Hệ thống giới thiệu &amp; đăng ký sự kiện</footer>
+  </div>
+</body>
+</html>
