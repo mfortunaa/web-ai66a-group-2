@@ -99,6 +99,37 @@ def get_booking(session: Session, user_id: int, booking_id: int) -> Booking:
     return booking
 
 
+def payment_retry_status(
+    session: Session,
+    booking: Booking,
+    now: datetime | None = None,
+) -> tuple[bool, str | None]:
+    if booking.status == BookingStatus.CONFIRMED.value:
+        return False, "already_confirmed"
+    if booking.status not in OPEN_STATES:
+        return False, "not_retryable"
+
+    event = session.get(Event, booking.event_id)
+    event_session = session.get(EventSession, booking.event_session_id)
+    if event is None or event_session is None:
+        return False, "event_unavailable"
+
+    current_time = as_utc(now or utcnow())
+    try:
+        _check_bookable(event, event_session, current_time)
+    except BookingError as error:
+        if "not opened" in error.message:
+            return False, "sales_not_open"
+        return False, "sales_closed"
+
+    if (
+        event_session.capacity - event_session.tickets_sold < booking.quantity
+        or event.capacity - event.tickets_sold < booking.quantity
+    ):
+        return False, "tickets_unavailable"
+    return True, None
+
+
 def simulate_payment(session: Session, user_id: int, booking_id: int, outcome: str) -> Booking:
     booking = get_booking(session, user_id, booking_id)
     if booking.status == BookingStatus.CONFIRMED.value:

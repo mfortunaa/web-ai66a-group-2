@@ -317,7 +317,8 @@ def test_booking_timestamps_keep_utc_through_create_read_and_payment(client, db_
 def test_booking_response_normalizes_naive_and_offset_timestamps(timestamp):
     data = dict(id=1, reference="BK-TEST", event_id=1, event_title="Evening show", event_session_id=1,
                 quantity=1, unit_price_vnd=100000, total_price_vnd=100000, **ATTENDEE,
-                status="confirmed", session_starts_at=timestamp, session_ends_at=timestamp,
+                status="confirmed", can_retry_payment=False, retry_unavailable_reason="already_confirmed",
+                session_starts_at=timestamp, session_ends_at=timestamp,
                 created_at=timestamp, paid_at=timestamp)
     body = BookingRead(**data).model_dump(mode="json")
     for name in ("session_starts_at", "session_ends_at", "created_at", "paid_at"):

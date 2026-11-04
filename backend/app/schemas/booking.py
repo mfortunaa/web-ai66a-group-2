@@ -52,6 +52,8 @@ class BookingRead(BaseModel):
     status: Literal["pending", "confirmed", "payment_failed"]
     created_at: datetime
     paid_at: datetime | None = None
+    can_retry_payment: bool
+    retry_unavailable_reason: str | None
 
     @field_validator("session_starts_at", "session_ends_at", "created_at", "paid_at")
     @classmethod
