@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Xác nhận đặt vé qua thanh toán mô phỏng trên Eventy.">
-  <title>Thanh toán mô phỏng | Eventy</title>
+  <title data-i18n-vi="Thanh toán mô phỏng | Eventy" data-i18n-en="Simulated payment | Eventy">Thanh toán mô phỏng | Eventy</title>
   <link rel="stylesheet" href="../css/common.css">
   <link rel="stylesheet" href="../css/payment.css">
   <script type="module" src="../js/payment.js"></script>
@@ -16,40 +16,42 @@
         <svg class="brand-mark" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h18v5a2 2 0 0 0 0 4v5H3v-5a2 2 0 0 0 0-4V5Z"/><path d="M15 5v14" stroke-dasharray="2 2"/></svg>
         <span>eventy</span>
       </a>
-      <nav class="site-nav" aria-label="Điều hướng chính">
-        <a class="nav-link" href="events.html">Sự kiện</a>
+      <nav class="site-nav" aria-label="Điều hướng chính" data-i18n-aria-vi="Điều hướng chính" data-i18n-aria-en="Main navigation">
+        <a class="nav-link" href="events.html" data-i18n-vi="Sự kiện" data-i18n-en="Events">Sự kiện</a>
         <a class="nav-link" href="my-bookings.html" data-i18n-vi="Vé của tôi" data-i18n-en="My bookings">Vé của tôi</a>
-        <button id="logout" class="secondary" type="button">Đăng xuất</button>
+        <button id="language-toggle" class="header-control" type="button">EN</button>
+        <button id="theme-toggle" class="header-control" type="button" aria-pressed="false"><span data-theme-icon aria-hidden="true">◐</span><span data-theme-label>Giao diện tối</span></button>
+        <button id="logout" class="secondary" type="button" data-i18n-vi="Đăng xuất" data-i18n-en="Log out">Đăng xuất</button>
       </nav>
     </header>
 
     <main class="flow-main">
-      <a id="back-link" class="back-link" href="events.html">← Quay lại sự kiện</a>
+      <a id="back-link" class="back-link" href="events.html" data-i18n-vi="← Quay lại sự kiện" data-i18n-en="← Back to event">← Quay lại sự kiện</a>
       <p class="eyebrow">CHECKOUT DEMO</p>
-      <h1>Thanh toán mô phỏng</h1>
-      <p class="demo-warning">Đây chỉ là bước mô phỏng cho bài demo. Không có giao dịch tiền thật và không yêu cầu thông tin thẻ hoặc ngân hàng.</p>
+      <h1 data-i18n-vi="Thanh toán mô phỏng" data-i18n-en="Simulated payment">Thanh toán mô phỏng</h1>
+      <p class="demo-warning" data-i18n-vi="Đây chỉ là bước mô phỏng cho bài demo. Không có giao dịch tiền thật và không yêu cầu thông tin thẻ hoặc ngân hàng." data-i18n-en="This is a demo simulation. No real money is transferred and no card or bank details are required.">Đây chỉ là bước mô phỏng cho bài demo. Không có giao dịch tiền thật và không yêu cầu thông tin thẻ hoặc ngân hàng.</p>
       <p id="page-message" class="page-message" role="status" aria-live="polite">Đang kiểm tra đặt vé…</p>
-      <button id="check-status" class="button-secondary" type="button" hidden>Kiểm tra trạng thái đặt vé</button>
+      <button id="check-status" class="button-secondary" type="button" hidden data-i18n-vi="Kiểm tra trạng thái đặt vé" data-i18n-en="Check booking status">Kiểm tra trạng thái đặt vé</button>
 
       <section id="payment-content" class="payment-card" aria-labelledby="event-title" hidden>
         <p id="booking-status" class="status-pill"></p>
         <h2 id="event-title"></h2>
         <dl class="booking-summary">
-          <div><dt>Mã đặt vé</dt><dd id="booking-reference"></dd></div>
-          <div><dt>Suất diễn</dt><dd id="event-time"></dd></div>
-          <div><dt>Số lượng</dt><dd id="booking-quantity"></dd></div>
-          <div><dt>Người tham dự</dt><dd id="attendee-name"></dd></div>
-          <div><dt>Tổng thanh toán</dt><dd id="booking-total" class="summary-total"></dd></div>
+          <div><dt data-i18n-vi="Mã đặt vé" data-i18n-en="Booking reference">Mã đặt vé</dt><dd id="booking-reference"></dd></div>
+          <div><dt data-i18n-vi="Suất diễn" data-i18n-en="Performance">Suất diễn</dt><dd id="event-time"></dd></div>
+          <div><dt data-i18n-vi="Số lượng" data-i18n-en="Quantity">Số lượng</dt><dd id="booking-quantity"></dd></div>
+          <div><dt data-i18n-vi="Người tham dự" data-i18n-en="Attendee">Người tham dự</dt><dd id="attendee-name"></dd></div>
+          <div><dt data-i18n-vi="Tổng thanh toán" data-i18n-en="Payment total">Tổng thanh toán</dt><dd id="booking-total" class="summary-total"></dd></div>
         </dl>
         <p id="payment-result" class="payment-result" role="status" aria-live="polite"></p>
         <div id="payment-actions" class="payment-actions">
-          <button id="simulate-success" class="button-primary" type="button">Mô phỏng thanh toán thành công</button>
-          <button id="simulate-failure" class="button-secondary" type="button">Mô phỏng thanh toán thất bại</button>
+          <button id="simulate-success" class="button-primary" type="button" data-i18n-vi="Mô phỏng thanh toán thành công" data-i18n-en="Simulate successful payment">Mô phỏng thanh toán thành công</button>
+          <button id="simulate-failure" class="button-secondary" type="button" data-i18n-vi="Mô phỏng thanh toán thất bại" data-i18n-en="Simulate failed payment">Mô phỏng thanh toán thất bại</button>
         </div>
-        <a id="confirmation-link" class="confirmation-link" href="events.html" hidden>Xem xác nhận đặt vé</a>
+        <a id="confirmation-link" class="confirmation-link" href="events.html" hidden data-i18n-vi="Xem xác nhận đặt vé" data-i18n-en="View booking confirmation">Xem xác nhận đặt vé</a>
       </section>
     </main>
-    <footer class="site-footer">Eventy · Thanh toán mô phỏng, không thu thập thông tin thanh toán thật</footer>
+    <footer class="site-footer" data-i18n-vi="Eventy · Thanh toán mô phỏng, không thu thập thông tin thanh toán thật" data-i18n-en="Eventy · Simulated payment; no real payment details collected">Eventy · Thanh toán mô phỏng, không thu thập thông tin thanh toán thật</footer>
   </div>
 </body>
 </html>

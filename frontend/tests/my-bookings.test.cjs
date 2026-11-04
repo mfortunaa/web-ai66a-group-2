@@ -5,7 +5,7 @@ const vm = require('node:vm');
 const test = require('node:test');
 const source = fs.readFileSync(path.join(__dirname, '../js/my-bookings.js'), 'utf8')
   .replace(/^import .*;\r?\n/gm, '').replace(/loadPage\(\);\s*$/, '');
-const reasons = fs.readFileSync(path.join(__dirname, '../js/booking-status.js'), 'utf8').replace('export function', 'function');
+const reasons = fs.readFileSync(path.join(__dirname, '../js/booking-status.js'), 'utf8').replace(/^import .*;\r?\n/gm, '').replace('export function', 'function');
 function element(tag = 'div') {
   return { tag, children: [], hidden: false, disabled: false, textContent: '', attributes: {}, listeners: {},
     append(...children) { this.children.push(...children); },
@@ -16,7 +16,7 @@ function element(tag = 'div') {
 function setup(transport = async () => pageData([]), authenticate = async () => ({})) {
   const nodes = new Map(); const requests = []; const events = {};
   const get = selector => { if (!nodes.has(selector)) nodes.set(selector, element()); return nodes.get(selector); };
-  const context = vm.createContext({ Intl, Date, Object, Number, encodeURIComponent,
+  const context = vm.createContext({ t: (vi, en) => vi, getLanguage: () => 'vi', initializeSitePreferences() {}, localizeMessage: text => text, Intl, Date, Object, Number, encodeURIComponent,
     document: { querySelector: get, createElement: element },
     window: { addEventListener: (event, fn) => { events[event] = fn; } },
     requireAuth: authenticate, logout() {},
