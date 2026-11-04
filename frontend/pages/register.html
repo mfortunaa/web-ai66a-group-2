@@ -4,14 +4,15 @@
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Tạo tài khoản | Eventy</title>
   <link rel="stylesheet" href="../css/auth.css">
+  <link rel="stylesheet" href="../css/auth-entry.css">
   <script type="module" src="../js/auth-pages.js"></script>
 </head>
-<body>
+<body class="auth-entry-page register-page">
   <div class="auth-shell">
     <header class="auth-header"><a class="brand" href="../index.html" aria-label="Eventy – Trang đăng nhập"><svg class="brand-mark" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h18v5a2 2 0 0 0 0 4v5H3v-5a2 2 0 0 0 0-4V5Z"/><path d="M15 5v14" stroke-dasharray="2 2"/></svg><span>eventy</span></a><span class="header-context">Khám phá &amp; đăng ký sự kiện</span></header>
     <main class="auth-layout">
       <section class="form-panel" aria-labelledby="page-title">
-        <h1 id="page-title">Tạo tài khoản</h1><p class="subtitle">Tạo tài khoản để khám phá sự kiện và đăng ký vé.</p>
+        <h1 id="page-title">Tạo tài khoản</h1><p class="subtitle">Bắt đầu khám phá sự kiện và lưu những cuộc hẹn của bạn.</p>
         <form id="register-form" aria-describedby="form-message">
           <div class="field"><label for="full-name">Họ và tên</label><input id="full-name" name="full_name" autocomplete="name" maxlength="100" required></div>
           <div class="field"><label for="email">Email</label><input id="email" name="email" type="email" autocomplete="username" maxlength="254" spellcheck="false" autocapitalize="none" required></div>
@@ -21,16 +22,19 @@
           <button class="primary" type="submit">Tạo tài khoản</button>
         </form>
         <p class="switch">Đã có tài khoản? <a href="../index.html">Đăng nhập</a></p>
+        <p class="auth-note">Một tài khoản. Mọi trải nghiệm của bạn.</p>
         <noscript><p class="message">Vui lòng bật JavaScript để đăng ký hoặc đăng nhập.</p></noscript>
       </section>
       <aside class="intro" aria-labelledby="intro-title">
-        <h2 id="intro-title">Một tài khoản cho <br>những cuộc hẹn mới.</h2>
-        <p>Tìm sự kiện phù hợp với lịch của bạn, chọn vé và đăng ký tham dự cùng Eventy.</p>
-        <ul class="account-benefits"><li>Sự kiện đang và sắp mở bán</li><li>Thời gian, địa điểm, giá vé rõ ràng</li><li>Thông tin đặt vé gắn với tài khoản</li></ul>
-        <p class="intro-note">Đăng nhập là bước đầu tiên để khám phá sự kiện.</p>
+        <h2 id="intro-title">Hẹn bạn ở<br>sự kiện tiếp theo.</h2>
+        <p>Đêm nhạc bạn chờ. Workshop bạn thích. <br>Những cuộc hẹn bắt đầu từ đây.</p>
+        <figure class="event-ticket">
+          <img src="../assets/images/events/Workshop-Botanical-Art.webp" alt="Workshop tranh thực vật ép Botanical Art tại Lá Nhà Garden" width="1280" height="720" fetchpriority="high">
+          <figcaption><div><span class="ticket-category">Một trải nghiệm cùng Eventy</span><strong>Chậm lại một chút. <br>Sáng tạo một chút.</strong><span class="ticket-venue">Workshop Botanical Art · Lá Nhà Garden</span></div><svg class="ticket-mark" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h18v5a2 2 0 0 0 0 4v5H3v-5a2 2 0 0 0 0-4V5Z"/><path d="M15 5v14" stroke-dasharray="2 2"/></svg></figcaption>
+        </figure>
       </aside>
     </main>
-    <footer class="auth-footer">Eventy · Hệ thống giới thiệu &amp; đăng ký sự kiện</footer>
+    <footer class="auth-footer"><span>Eventy · Khám phá. Đặt vé. Trải nghiệm.</span><span>Những cuộc hẹn đáng mong chờ.</span></footer>
   </div>
 </body>
 </html>

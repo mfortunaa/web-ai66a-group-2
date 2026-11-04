@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Vé của tôi | Eventy</title>
+  <meta name="description" content="Xem lại đặt vé và tiếp tục thanh toán trên Eventy.">
+  <link rel="stylesheet" href="../css/common.css">
+  <link rel="stylesheet" href="../css/my-bookings.css">
+  <script type="module" src="../js/my-bookings.js"></script>
+</head>
+<body>
+  <div class="site-shell">
+    <header class="site-header">
+      <a class="brand" href="events.html" aria-label="Eventy – Khám phá sự kiện"><svg class="brand-mark" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h18v5a2 2 0 0 0 0 4v5H3v-5a2 2 0 0 0 0-4V5Z"/><path d="M15 5v14" stroke-dasharray="2 2"/></svg><span>eventy</span></a>
+      <nav class="site-nav" aria-label="Điều hướng chính"><a class="nav-link" href="events.html">Sự kiện</a><a class="nav-link" href="my-bookings.html" aria-current="page">Vé của tôi</a><button id="logout" class="secondary" type="button">Đăng xuất</button></nav>
+    </header>
+    <main class="bookings-main">
+      <div class="bookings-heading"><div><h1>Vé của tôi</h1><p>Những cuộc hẹn của bạn, lưu lại ở đây.</p></div><a class="nav-link" href="events.html">Khám phá sự kiện →</a></div>
+      <p id="page-message" class="page-message" role="status" aria-live="polite">Đang tải đặt vé…</p>
+      <button id="retry" class="button-secondary" type="button" hidden>Thử lại</button>
+      <section id="bookings-empty" class="bookings-empty" aria-labelledby="empty-title" hidden><h2 id="empty-title">Cuộc hẹn đầu tiên đang chờ bạn.</h2><p>Bạn chưa có đặt vé nào. Khám phá sự kiện và chọn một trải nghiệm bạn thích.</p><a class="button-primary" href="events.html">Tìm sự kiện</a></section>
+      <section id="bookings-content" aria-label="Danh sách đặt vé" hidden>
+        <p id="bookings-count" class="bookings-count"></p>
+        <ul id="bookings-list" class="bookings-list"></ul>
+        <nav id="pagination" class="bookings-pagination" aria-label="Phân trang đặt vé" hidden><button id="previous-page" class="button-secondary" type="button">Trang trước</button><p id="page-range" aria-live="polite"></p><button id="next-page" class="button-secondary" type="button">Trang sau</button></nav>
+      </section>
+    </main>
+    <footer class="bookings-footer">Eventy · Khám phá. Đặt vé. Trải nghiệm.</footer>
+  </div>
+</body>
+</html>

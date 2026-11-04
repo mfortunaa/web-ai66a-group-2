@@ -54,7 +54,7 @@ form.addEventListener('submit', async (event) => {
   }
   button.disabled = true;
   form.setAttribute('aria-busy', 'true');
-  button.textContent = 'Đang xử lý…';
+  button.textContent = isRegistration ? 'Đang tạo tài khoản…' : 'Đang đăng nhập…';
   try {
     if (isRegistration) {
       const result = await register(data.get('full_name'), data.get('email'), password);

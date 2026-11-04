@@ -1,5 +1,6 @@
 import { apiRequest } from './api.js';
 import { logout, requireAuth } from './auth.js';
+import { retryUnavailableMessage } from './booking-status.js';
 
 const bookingId = new URLSearchParams(window.location.search).get('booking_id');
 const message = document.querySelector('#page-message');
@@ -55,8 +56,11 @@ function renderBooking(booking) {
   document.querySelector('#booking-total').textContent = formatPrice(booking.total_price_vnd);
 
   const paymentLink = document.querySelector('#payment-link');
-  paymentLink.hidden = confirmed;
+  paymentLink.hidden = confirmed || booking.can_retry_payment !== true;
   paymentLink.href = `payment.html?booking_id=${encodeURIComponent(booking.id)}`;
+  if (!confirmed && booking.can_retry_payment !== true) {
+    setMessage(retryUnavailableMessage(booking.retry_unavailable_reason), true);
+  }
 }
 
 async function loadBooking() {

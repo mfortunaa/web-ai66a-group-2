@@ -29,6 +29,7 @@ The demo uses seeded events, a local SQLite database, and simulated payment. It 
 3. Enter or confirm the attendee name, email, and phone. Continue to the simulated payment page.
 4. Choose **Mô phỏng thanh toán thành công**. Verify that the confirmation page shows a confirmed status, booking reference, event/session, quantity, attendee summary, and server-calculated total.
 5. Reload the confirmation page. The same confirmation should load from the authenticated booking API.
+6. Choose **Về Vé của tôi**, then log out and log back in. From the catalog choose **Vé của tôi** and reopen the same confirmed booking. Verify its reference, quantity and total match the confirmation.
 
 ## Failure and sold-out checks
 
@@ -54,4 +55,12 @@ node --test frontend/tests/booking.test.cjs
 - If stock was consumed during a previous run, re-create a disposable database and seed it again. Keep real/shared databases and booking records intact.
 - If the page reports an API error, check the browser's network request and FastAPI logs. Do not interpret a timeout as success; return to the same checkout/payment URL and let it reconcile.
 
-My Bookings is not available yet. Add its navigation link here and in the shared application navigation when that page is delivered.
+## My Bookings checks
+
+- Use a new account: **Vé của tôi** must show an empty state with a catalog link.
+- Fail a simulated payment, open **Vé của tôi**, choose **Thử thanh toán lại**, and complete the original booking. Return to the list (including browser Back); it must refresh to **Đã xác nhận**, without consuming stock twice.
+- Open a pending booking after sales close or stock runs out: the list explains why payment is unavailable. Open a stale payment URL directly; it must reload the current eligibility and hide payment actions. The backend still rejects a stale success request.
+- Test more than 10 bookings with **Trang trước / Trang sau**. Verify newest-first ordering, totals, timezone and all statuses on desktop/tablet/phone, and use Tab/Enter for navigation.
+- Disconnect the API, then choose **Thử lại** after reconnecting. Reload the list URL directly; expired authentication returns to sign-in. Account B must never see account A's list or details.
+
+Automated frontend regression checks: `node --test frontend/tests/*.test.cjs`. The sign-in and registration pages share `css/auth-entry.css`; both preserve the existing email verification and recovery flows.

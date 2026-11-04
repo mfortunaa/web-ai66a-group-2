@@ -109,6 +109,43 @@ def test_my_bookings_requires_authentication(client):
     assert client.get("/api/bookings").status_code == 401
 
 
+def test_resume_original_booking_and_reopen_after_login(client, db_engine):
+    headers = create_account(client, "resume@example.com")
+    event_id, session_id = add_event_and_session(db_engine)
+    response = client.post("/api/bookings", headers=headers, json={
+        "event_session_id": session_id, "quantity": 2,
+        "attendee_name": "Booking Tester", "attendee_email": "resume@example.com",
+        "attendee_phone": "0901234567",
+    })
+    assert response.status_code == 201
+    original = response.json()
+    booking_id = original["id"]
+    assert client.post(f"/api/bookings/{booking_id}/simulate-payment", headers=headers,
+                       json={"outcome": "failure"}).json()["status"] == "payment_failed"
+    item = client.get("/api/bookings", headers=headers).json()["items"][0]
+    assert item["id"] == booking_id and item["can_retry_payment"] is True
+    paid = client.post(f"/api/bookings/{booking_id}/simulate-payment", headers=headers,
+                       json={"outcome": "success"}).json()
+    new_token = client.post("/api/auth/token", data={
+        "username": "resume@example.com", "password": "password123",
+    }).json()["access_token"]
+    headers = {"Authorization": f"Bearer {new_token}"}
+    listing = client.get("/api/bookings", headers=headers).json()
+    assert listing["total"] == 1
+    assert listing["items"][0]["id"] == booking_id
+    assert listing["items"][0]["status"] == "confirmed"
+    detail = client.get(f"/api/bookings/{booking_id}", headers=headers).json()
+    assert detail["reference"] == original["reference"]
+    assert detail["total_price_vnd"] == original["total_price_vnd"]
+    assert detail["can_retry_payment"] is False
+    again = client.post(f"/api/bookings/{booking_id}/simulate-payment", headers=headers,
+                        json={"outcome": "success"}).json()
+    assert again["paid_at"] == paid["paid_at"]
+    with Session(db_engine) as session:
+        assert session.get(Event, event_id).tickets_sold == 2
+        assert session.get(EventSession, session_id).tickets_sold == 2
+
+
 def test_my_bookings_returns_honest_empty_list(client):
     headers = create_account(client, "empty@example.com")
 

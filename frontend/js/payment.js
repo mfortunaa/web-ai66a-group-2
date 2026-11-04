@@ -1,5 +1,6 @@
 import { apiRequest } from './api.js';
 import { logout, requireAuth } from './auth.js';
+import { retryUnavailableMessage } from './booking-status.js';
 
 const params = new URLSearchParams(window.location.search);
 const bookingId = params.get('booking_id');
@@ -73,6 +74,12 @@ function renderBooking(booking, notice = '') {
     actions.hidden = false;
     document.querySelector('#simulate-failure').hidden = false;
     document.querySelector('#confirmation-link').hidden = true;
+  }
+  if (booking.status !== 'confirmed' && booking.can_retry_payment !== true) {
+    actions.hidden = true;
+    result.textContent = retryUnavailableMessage(booking.retry_unavailable_reason);
+    result.className = 'payment-result error';
+    checkButton.hidden = false;
   }
 }
 
