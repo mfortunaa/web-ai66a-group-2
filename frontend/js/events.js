@@ -1,6 +1,7 @@
 import { API_BASE_URL } from './config.js';
 import { apiRequest } from './api.js';
 import { logout, requireAuth } from './auth.js';
+import { getLanguage, initializeSitePreferences, translate } from './site-preferences.js';
 
 const form = document.querySelector('#filters');
 const message = document.querySelector('#page-message');
@@ -9,26 +10,33 @@ const sections = document.querySelector('#catalog-sections');
 const emptyMessage = document.querySelector('#catalog-empty');
 const formControls = form.querySelectorAll('input, select, button');
 let retryAction = loadEvents;
+let catalogItems = [];
 
 const timeZone = 'Asia/Ho_Chi_Minh';
-const dateFormatter = new Intl.DateTimeFormat('vi-VN', {
-  day: 'numeric', month: 'long', year: 'numeric', timeZone,
-});
-const dateTimeFormatter = new Intl.DateTimeFormat('vi-VN', {
-  dateStyle: 'medium', timeStyle: 'short', timeZone,
-});
-const statusLabels = {
-  on_sale: 'Đang mở bán',
-  coming_soon: 'Sắp mở bán',
-  sold_out: 'Đã bán hết',
-  closed: 'Đã đóng bán',
-};
-
+initializeSitePreferences();
 document.querySelector('#logout').addEventListener('click', logout);
+window.addEventListener('eventy:languagechange', () => {
+  if (catalogItems.length) updateCatalog(catalogItems);
+});
 
-function formatDate(value, formatter = dateFormatter) {
+function getStatusLabel(status) {
+  const labels = {
+    on_sale: translate('Đang mở bán', 'On sale'),
+    coming_soon: translate('Sắp mở bán', 'Coming soon'),
+    sold_out: translate('Đã bán hết', 'Sold out'),
+    closed: translate('Đã đóng bán', 'Closed'),
+  };
+  return labels[status] || translate('Đang cập nhật', 'Updating');
+}
+
+function formatDate(value) {
   const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? 'Thời gian đang cập nhật' : formatter.format(date);
+  if (Number.isNaN(date.getTime())) return translate('Thời gian đang cập nhật', 'Time to be announced');
+  const locale = getLanguage() === 'en' ? 'en-GB' : 'vi-VN';
+  const formatter = new Intl.DateTimeFormat(locale, {
+    day: 'numeric', month: 'long', year: 'numeric', timeZone,
+  });
+  return formatter.format(date);
 }
 
 function eventDate(event) {
@@ -38,7 +46,8 @@ function eventDate(event) {
 }
 
 function formatPrice(value) {
-  return `${Number(value).toLocaleString('vi-VN')} ₫`;
+  const locale = getLanguage() === 'en' ? 'en-US' : 'vi-VN';
+  return `${Number(value).toLocaleString(locale)} ₫`;
 }
 
 function imageUrl(path) {
@@ -61,9 +70,9 @@ function createEventCard(event) {
   const poster = makeElement('figure', 'event-poster');
   const image = document.createElement('img');
   image.src = imageUrl(event.image_url);
-  image.alt = `Ảnh sự kiện ${event.title}`;
+  image.alt = translate(`Ảnh sự kiện ${event.title}`, `Event poster: ${event.title}`);
   image.loading = 'lazy';
-  const fallback = makeElement('span', 'poster-fallback', 'Chưa có ảnh sự kiện');
+  const fallback = makeElement('span', 'poster-fallback', translate('Chưa có ảnh sự kiện', 'No event image'));
   fallback.hidden = true;
   image.addEventListener('error', () => {
     image.hidden = true;
@@ -76,15 +85,15 @@ function createEventCard(event) {
   heading.append(
     makeElement('h3', '', event.title),
     makeElement('span', `status-pill${event.sale_status === 'on_sale' || event.sale_status === 'coming_soon' ? '' : ' unavailable'}`,
-      statusLabels[event.sale_status] || 'Đang cập nhật'),
+        getStatusLabel(event.sale_status)),
   );
-  const date = makeElement('p', 'event-meta', `Thời gian: ${eventDate(event)}`);
+      const date = makeElement('p', 'event-meta', `${translate('Thời gian', 'Time')}: ${eventDate(event)}`);
   const description = makeElement('p', 'event-description', event.description);
   const price = makeElement('p', 'event-price', formatPrice(event.ticket_price_vnd));
   const detail = document.createElement('a');
   detail.className = 'event-card-link';
   detail.href = `event-detail.html?event_id=${encodeURIComponent(event.id)}`;
-  detail.textContent = 'Xem chi tiết';
+  detail.textContent = translate('Xem chi tiết', 'View details');
   content.append(heading, date, description, price, detail);
   card.append(poster, content);
   return card;
@@ -133,17 +142,18 @@ async function loadEvents() {
   retryButton.hidden = true;
   emptyMessage.hidden = true;
   sections.hidden = true;
-  setMessage('Đang tải danh sách sự kiện…');
+  setMessage(translate('Đang tải danh sách sự kiện…', 'Loading events…'));
   setFormDisabled(true);
   try {
     const data = await apiRequest('/api/events');
     if (!data || !Array.isArray(data.items)) {
-      throw new Error('Dữ liệu sự kiện từ máy chủ không hợp lệ.');
+      throw new Error(translate('Dữ liệu sự kiện từ máy chủ không hợp lệ.', 'The event data from the server is invalid.'));
     }
-    updateCatalog(data.items);
+    catalogItems = data.items;
+    updateCatalog(catalogItems);
     setMessage('');
   } catch (error) {
-    setMessage(error.message || 'Không thể tải danh sách sự kiện.', 'error');
+    setMessage(error.message || translate('Không thể tải danh sách sự kiện.', 'Could not load events.'), 'error');
     retryButton.hidden = error.status === 401;
     retryAction = loadEvents;
   } finally {
@@ -155,7 +165,7 @@ async function applyFilters() {
   const dateFrom = form.elements.date_from.value;
   const dateTo = form.elements.date_to.value;
   if (dateFrom && dateTo && dateFrom > dateTo) {
-    setMessage('Ngày bắt đầu phải trước hoặc bằng ngày kết thúc.', 'error');
+    setMessage(translate('Ngày bắt đầu phải trước hoặc bằng ngày kết thúc.', 'The start date must be on or before the end date.'), 'error');
     retryButton.hidden = true;
     return;
   }
@@ -166,19 +176,20 @@ async function applyFilters() {
   retryButton.hidden = true;
   emptyMessage.hidden = true;
   sections.hidden = true;
-  setMessage('Đang lọc sự kiện…');
+  setMessage(translate('Đang lọc sự kiện…', 'Filtering events…'));
   setFormDisabled(true);
   try {
     const queryString = query.toString();
     const suffix = queryString ? `?${queryString}` : '';
     const data = await apiRequest(`/api/events${suffix}`);
     if (!data || !Array.isArray(data.items)) {
-      throw new Error('Dữ liệu sự kiện từ máy chủ không hợp lệ.');
+      throw new Error(translate('Dữ liệu sự kiện từ máy chủ không hợp lệ.', 'The event data from the server is invalid.'));
     }
-    updateCatalog(data.items);
+    catalogItems = data.items;
+    updateCatalog(catalogItems);
     setMessage('');
   } catch (error) {
-    setMessage(error.message || 'Không thể lọc danh sách sự kiện.', 'error');
+    setMessage(error.message || translate('Không thể lọc danh sách sự kiện.', 'Could not filter events.'), 'error');
     retryButton.hidden = error.status === 401;
     retryAction = applyFilters;
   } finally {
@@ -196,13 +207,13 @@ form.addEventListener('reset', () => {
 retryButton.addEventListener('click', () => retryAction());
 
 async function start() {
-  setMessage('Đang kiểm tra đăng nhập…');
+  setMessage(translate('Đang kiểm tra đăng nhập…', 'Checking sign-in…'));
   retryButton.hidden = true;
   try {
     await requireAuth();
     await loadEvents();
   } catch (error) {
-    setMessage(error.message || 'Không thể xác minh tài khoản.', 'error');
+    setMessage(error.message || translate('Không thể xác minh tài khoản.', 'Could not verify your account.'), 'error');
     retryButton.hidden = error.status === 401;
     retryAction = start;
   }

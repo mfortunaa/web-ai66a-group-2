@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Thông tin chi tiết sự kiện trên Eventy.">
-  <title>Chi tiết sự kiện | Eventy</title>
+  <title data-i18n-vi="Chi tiết sự kiện | Eventy" data-i18n-en="Event details | Eventy">Chi tiết sự kiện | Eventy</title>
   <link rel="stylesheet" href="../css/common.css">
   <link rel="stylesheet" href="../css/event-detail.css">
   <script type="module" src="../js/event-detail.js"></script>
@@ -16,22 +16,27 @@
         <svg class="brand-mark" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h18v5a2 2 0 0 0 0 4v5H3v-5a2 2 0 0 0 0-4V5Z"/><path d="M15 5v14" stroke-dasharray="2 2"/></svg>
         <span>eventy</span>
       </a>
-      <nav class="site-nav" aria-label="Điều hướng chính">
-        <a class="nav-link" href="events.html">Sự kiện</a>
-        <button id="logout" class="secondary" type="button">Đăng xuất</button>
+      <nav class="site-nav" aria-label="Điều hướng chính" data-i18n-aria-vi="Điều hướng chính" data-i18n-aria-en="Main navigation">
+        <a class="nav-link" href="events.html" data-i18n-vi="Sự kiện" data-i18n-en="Events">Sự kiện</a>
+        <button id="language-toggle" class="header-control" type="button">EN</button>
+        <button id="theme-toggle" class="header-control" type="button" aria-pressed="false">
+          <span class="theme-toggle-icon" data-theme-icon aria-hidden="true">◐</span>
+          <span data-theme-label>Giao diện tối</span>
+        </button>
+        <button id="logout" class="secondary" type="button" data-i18n-vi="Đăng xuất" data-i18n-en="Log out">Đăng xuất</button>
       </nav>
     </header>
 
     <main class="detail-main">
-      <a class="back-link" href="events.html">← Quay lại danh sách</a>
+      <a class="back-link" href="events.html" data-i18n-vi="← Quay lại danh sách" data-i18n-en="← Back to events">← Quay lại danh sách</a>
       <p id="page-message" class="page-message" role="status" aria-live="polite">Đang tải thông tin sự kiện…</p>
-      <button id="retry" class="button-secondary retry-button" type="button" hidden>Thử lại</button>
+      <button id="retry" class="button-secondary retry-button" type="button" hidden data-i18n-vi="Thử lại" data-i18n-en="Retry">Thử lại</button>
 
       <article id="event-content" hidden>
         <div class="detail-layout">
           <figure class="detail-poster">
             <img id="event-image" alt="">
-            <figcaption id="poster-fallback" hidden>Chưa có ảnh sự kiện</figcaption>
+            <figcaption id="poster-fallback" hidden data-i18n-vi="Chưa có ảnh sự kiện" data-i18n-en="No event image">Chưa có ảnh sự kiện</figcaption>
           </figure>
           <div class="detail-summary">
             <p id="event-status" class="status-pill"></p>
@@ -40,28 +45,55 @@
             <p id="event-venue" class="event-venue"></p>
             <p id="event-address" class="event-address"></p>
             <div class="price-panel">
-              <span>Giá vé</span>
+              <span data-i18n-vi="Giá vé" data-i18n-en="Ticket price">Giá vé</span>
               <strong id="event-price"></strong>
               <span id="event-availability"></span>
             </div>
             <p id="sales-opening" class="sales-opening" hidden></p>
             <p id="booking-note" class="booking-note" hidden></p>
-            <a id="buy-tickets" class="button-primary buy-button" href="booking.html" hidden>Mua vé</a>
+            <a id="buy-tickets" class="button-primary buy-button" href="booking.html" hidden data-i18n-vi="Mua vé" data-i18n-en="Buy tickets">Mua vé</a>
           </div>
         </div>
 
         <section class="detail-section" aria-labelledby="description-heading">
-          <h2 id="description-heading">Về sự kiện</h2>
+          <h2 id="description-heading" data-i18n-vi="Về sự kiện" data-i18n-en="About this event">Về sự kiện</h2>
           <p id="event-description" class="event-description"></p>
         </section>
         <section id="sessions-section" class="detail-section" aria-labelledby="sessions-heading" hidden>
-          <h2 id="sessions-heading">Lịch diễn</h2>
+          <h2 id="sessions-heading" data-i18n-vi="Lịch diễn" data-i18n-en="Schedule">Lịch diễn</h2>
           <ul id="event-sessions" class="session-list"></ul>
         </section>
       </article>
     </main>
 
-    <footer class="site-footer">Eventy · Hệ thống giới thiệu &amp; đăng ký sự kiện</footer>
+    <footer class="site-footer">
+      <div class="footer-inner">
+        <div class="footer-main">
+          <div class="footer-brand">
+            <a class="brand" href="events.html" aria-label="Eventy – Khám phá sự kiện">
+              <svg class="brand-mark" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h18v5a2 2 0 0 0 0 4v5H3v-5a2 2 0 0 0 0-4V5Z"/><path d="M15 5v14" stroke-dasharray="2 2"/></svg>
+              <span>eventy</span>
+            </a>
+            <p data-i18n-vi="Khám phá sự kiện, xem lịch diễn và thông tin vé tại một nơi." data-i18n-en="Discover events, schedules, and ticket details in one place.">Khám phá sự kiện, xem lịch diễn và thông tin vé tại một nơi.</p>
+          </div>
+          <section class="footer-column" aria-labelledby="footer-explore-title">
+            <h2 id="footer-explore-title" data-i18n-vi="Khám phá" data-i18n-en="Explore">Khám phá</h2>
+            <ul class="footer-links">
+              <li><a href="events.html" data-i18n-vi="Tất cả sự kiện" data-i18n-en="All events">Tất cả sự kiện</a></li>
+              <li><a href="../index.html" data-i18n-vi="Tài khoản" data-i18n-en="Account">Tài khoản</a></li>
+            </ul>
+          </section>
+          <section class="footer-column" aria-labelledby="footer-about-title">
+            <h2 id="footer-about-title" data-i18n-vi="Thông tin" data-i18n-en="About">Thông tin</h2>
+            <p data-i18n-vi="Thông tin sự kiện và trạng thái vé được cập nhật từ hệ thống." data-i18n-en="Event details and ticket availability are provided by the system.">Thông tin sự kiện và trạng thái vé được cập nhật từ hệ thống.</p>
+          </section>
+        </div>
+        <div class="footer-bottom">
+          <span>© Eventy</span>
+          <span data-i18n-vi="Nền tảng khám phá và đăng ký sự kiện." data-i18n-en="An event discovery and registration platform.">Nền tảng khám phá và đăng ký sự kiện.</span>
+        </div>
+      </div>
+    </footer>
   </div>
 </body>
 </html>
