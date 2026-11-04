@@ -1,21 +1,125 @@
 <!doctype html>
 <html lang="vi">
 <head>
-  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Tài khoản | Eventy</title><link rel="stylesheet" href="../css/auth.css">
-  <script type="module" src="../js/account-page.js"></script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Khám phá sự kiện đang và sắp mở bán trên Eventy.">
+  <title data-i18n-vi="Khám phá sự kiện | Eventy" data-i18n-en="Discover events | Eventy">Khám phá sự kiện | Eventy</title>
+  <link rel="stylesheet" href="../css/common.css">
+  <link rel="stylesheet" href="../css/events.css">
+  <script type="module" src="../js/events.js"></script>
 </head>
-<body><div class="auth-shell">
-  <header class="auth-header"><a class="brand" href="events.html" aria-label="Eventy – Tài khoản"><svg class="brand-mark" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h18v5a2 2 0 0 0 0 4v5H3v-5a2 2 0 0 0 0-4V5Z"/><path d="M15 5v14" stroke-dasharray="2 2"/></svg><span>eventy</span></a><button id="logout" class="secondary" type="button">Đăng xuất</button></header>
-  <main class="account-content">
-    <h1>Tài khoản</h1>
-    <p id="page-message" class="message" role="status">Đang kiểm tra tài khoản…</p>
-    <button id="retry" class="secondary" type="button" hidden>Thử lại</button>
-    <div id="account-content" class="account-grid" hidden>
-      <section class="profile-panel" aria-labelledby="profile-title"><h2 id="profile-title">Thông tin của bạn</h2><dl><div><dt>Họ và tên</dt><dd id="user-name"></dd></div><div><dt>Email</dt><dd id="user-email"></dd></div></dl></section>
-      <section class="notice" aria-labelledby="events-title"><h2 id="events-title">Sự kiện</h2><p>Danh sách sự kiện đang được xây dựng. Bạn đã đăng nhập và có thể quay lại đây khi danh sách sẵn sàng.</p></section>
-    </div>
-  </main>
-  <footer class="auth-footer">Eventy · Hệ thống giới thiệu &amp; đăng ký sự kiện</footer>
-</div></body>
+<body>
+  <div class="site-shell">
+    <header class="site-header">
+      <a class="brand" href="events.html" aria-label="Eventy – Khám phá sự kiện">
+        <svg class="brand-mark" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h18v5a2 2 0 0 0 0 4v5H3v-5a2 2 0 0 0 0-4V5Z"/><path d="M15 5v14" stroke-dasharray="2 2"/></svg>
+        <span>eventy</span>
+      </a>
+      <nav class="site-nav" aria-label="Điều hướng chính" data-i18n-aria-vi="Điều hướng chính" data-i18n-aria-en="Main navigation">
+        <a class="nav-link" href="events.html" aria-current="page" data-i18n-vi="Sự kiện" data-i18n-en="Events">Sự kiện</a>
+        <button id="language-toggle" class="header-control" type="button">EN</button>
+        <button id="theme-toggle" class="header-control" type="button" aria-pressed="false">
+          <span class="theme-toggle-icon" data-theme-icon aria-hidden="true">◐</span>
+          <span data-theme-label>Giao diện tối</span>
+        </button>
+        <button id="logout" class="secondary" type="button" data-i18n-vi="Đăng xuất" data-i18n-en="Log out">Đăng xuất</button>
+      </nav>
+    </header>
+
+    <main>
+      <section class="catalog-intro" aria-labelledby="page-title">
+        <p class="eyebrow">EVENTY · <span data-i18n-vi="KHÁM PHÁ &amp; ĐĂNG KÝ" data-i18n-en="DISCOVER &amp; BOOK">KHÁM PHÁ &amp; ĐĂNG KÝ</span></p>
+        <h1 id="page-title" data-i18n-vi="Tìm sự kiện dành cho bạn" data-i18n-en="Find an event for you">Tìm sự kiện dành cho bạn</h1>
+        <p class="lead" data-i18n-vi="Khám phá những cuộc hẹn sắp tới, xem thông tin vé và chọn ngày phù hợp." data-i18n-en="Discover upcoming events, check ticket details, and find a date that works for you.">Khám phá những cuộc hẹn sắp tới, xem thông tin vé và chọn ngày phù hợp.</p>
+      </section>
+
+      <form id="filters" class="filter-panel" aria-label="Lọc sự kiện" data-i18n-aria-vi="Lọc sự kiện" data-i18n-aria-en="Filter events">
+        <div class="filter-field">
+          <label for="date-from" data-i18n-vi="Từ ngày" data-i18n-en="From">Từ ngày</label>
+          <input id="date-from" name="date_from" type="date">
+        </div>
+        <div class="filter-field">
+          <label for="date-to" data-i18n-vi="Đến ngày" data-i18n-en="To">Đến ngày</label>
+          <input id="date-to" name="date_to" type="date">
+        </div>
+        <div class="filter-field">
+          <label for="sale-status" data-i18n-vi="Trạng thái mở bán" data-i18n-en="Sale status">Trạng thái mở bán</label>
+          <select id="sale-status" name="sale_status">
+            <option value="" data-i18n-vi="Tất cả trạng thái" data-i18n-en="All statuses">Tất cả trạng thái</option>
+            <option value="on_sale" data-i18n-vi="Đang mở bán" data-i18n-en="On sale">Đang mở bán</option>
+            <option value="coming_soon" data-i18n-vi="Sắp mở bán" data-i18n-en="Coming soon">Sắp mở bán</option>
+            <option value="sold_out" data-i18n-vi="Đã bán hết" data-i18n-en="Sold out">Đã bán hết</option>
+            <option value="closed" data-i18n-vi="Đã đóng bán" data-i18n-en="Closed">Đã đóng bán</option>
+          </select>
+        </div>
+        <div class="filter-actions">
+          <button class="button-primary" type="submit" data-i18n-vi="Áp dụng" data-i18n-en="Apply">Áp dụng</button>
+          <button id="reset-filters" class="button-secondary" type="reset" data-i18n-vi="Đặt lại" data-i18n-en="Reset">Đặt lại</button>
+        </div>
+      </form>
+
+      <p id="page-message" class="page-message" role="status" aria-live="polite"></p>
+      <button id="retry" class="button-secondary retry-button" type="button" hidden data-i18n-vi="Thử lại" data-i18n-en="Retry">Thử lại</button>
+      <p id="catalog-empty" class="empty-message" hidden data-i18n-vi="Không tìm thấy sự kiện phù hợp với bộ lọc hiện tại." data-i18n-en="No events match the current filters.">Không tìm thấy sự kiện phù hợp với bộ lọc hiện tại.</p>
+
+      <div id="catalog-sections" class="catalog-sections" hidden>
+        <section class="event-section" aria-labelledby="on-sale-title">
+          <div class="section-heading">
+            <div><p class="eyebrow" data-i18n-vi="CHỌN VÉ NGAY" data-i18n-en="BOOK NOW">CHỌN VÉ NGAY</p><h2 id="on-sale-title" data-i18n-vi="Đang mở bán" data-i18n-en="On sale">Đang mở bán</h2></div>
+            <span id="on-sale-count" class="event-count">0</span>
+          </div>
+          <div id="on-sale-events" class="event-grid"></div>
+          <p id="on-sale-empty" class="section-empty" hidden data-i18n-vi="Hiện chưa có sự kiện đang mở bán." data-i18n-en="There are no events on sale right now.">Hiện chưa có sự kiện đang mở bán.</p>
+        </section>
+
+        <section class="event-section" aria-labelledby="coming-soon-title">
+          <div class="section-heading">
+            <div><p class="eyebrow" data-i18n-vi="ĐỪNG BỎ LỠ" data-i18n-en="COMING SOON">ĐỪNG BỎ LỠ</p><h2 id="coming-soon-title" data-i18n-vi="Sắp mở bán" data-i18n-en="Coming soon">Sắp mở bán</h2></div>
+            <span id="coming-soon-count" class="event-count">0</span>
+          </div>
+          <div id="coming-soon-events" class="event-grid"></div>
+          <p id="coming-soon-empty" class="section-empty" hidden data-i18n-vi="Chưa có sự kiện sắp mở bán." data-i18n-en="There are no upcoming sales yet.">Chưa có sự kiện sắp mở bán.</p>
+        </section>
+
+        <section id="unavailable-section" class="event-section" aria-labelledby="unavailable-title" hidden>
+          <div class="section-heading">
+            <div><p class="eyebrow" data-i18n-vi="CẬP NHẬT TRẠNG THÁI" data-i18n-en="STATUS UPDATE">CẬP NHẬT TRẠNG THÁI</p><h2 id="unavailable-title" data-i18n-vi="Đã đóng hoặc hết vé" data-i18n-en="Closed or sold out">Đã đóng hoặc hết vé</h2></div>
+            <span id="unavailable-count" class="event-count">0</span>
+          </div>
+          <div id="unavailable-events" class="event-grid"></div>
+        </section>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <div class="footer-inner">
+        <div class="footer-main">
+          <div class="footer-brand">
+            <a class="brand" href="events.html" aria-label="Eventy – Khám phá sự kiện">
+              <svg class="brand-mark" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h18v5a2 2 0 0 0 0 4v5H3v-5a2 2 0 0 0 0-4V5Z"/><path d="M15 5v14" stroke-dasharray="2 2"/></svg>
+              <span>eventy</span>
+            </a>
+            <p data-i18n-vi="Khám phá sự kiện, xem lịch diễn và thông tin vé tại một nơi." data-i18n-en="Discover events, schedules, and ticket details in one place.">Khám phá sự kiện, xem lịch diễn và thông tin vé tại một nơi.</p>
+          </div>
+          <section class="footer-column" aria-labelledby="footer-explore-title">
+            <h2 id="footer-explore-title" data-i18n-vi="Khám phá" data-i18n-en="Explore">Khám phá</h2>
+            <ul class="footer-links">
+              <li><a href="events.html" data-i18n-vi="Tất cả sự kiện" data-i18n-en="All events">Tất cả sự kiện</a></li>
+              <li><a href="../index.html" data-i18n-vi="Tài khoản" data-i18n-en="Account">Tài khoản</a></li>
+            </ul>
+          </section>
+          <section class="footer-column" aria-labelledby="footer-about-title">
+            <h2 id="footer-about-title" data-i18n-vi="Thông tin" data-i18n-en="About">Thông tin</h2>
+            <p data-i18n-vi="Thông tin sự kiện và trạng thái vé được cập nhật từ hệ thống." data-i18n-en="Event details and ticket availability are provided by the system.">Thông tin sự kiện và trạng thái vé được cập nhật từ hệ thống.</p>
+          </section>
+        </div>
+        <div class="footer-bottom">
+          <span>© Eventy</span>
+          <span data-i18n-vi="Nền tảng khám phá và đăng ký sự kiện." data-i18n-en="An event discovery and registration platform.">Nền tảng khám phá và đăng ký sự kiện.</span>
+        </div>
+      </div>
+    </footer>
+  </div>
+</body>
 </html>
