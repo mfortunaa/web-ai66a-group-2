@@ -37,6 +37,14 @@ The demo uses seeded events, a local SQLite database, and simulated payment. It 
 - **Duplicate/reload protection:** double-click the create-booking or payment action, reload during checkout, and use browser Back. Checkout retries reuse the stored idempotency key and payload; payment reloads fetch the owned booking. A lost payment response must be reconciled with `GET /api/bookings/{booking_id}` before another payment action appears.
 - **Unavailable session:** load a checkout with a stale session or submit more tickets than remain. The API conflict must be shown and must not navigate to a confirmed page.
 - **Expired login:** clear the session or wait for the JWT to expire, then reload a booking/payment URL. The app should return to the login entry page.
+- **Rejected retry:** after a lost booking response, retry the same request. If the API definitively rejects it (404/409/422), the form must unlock so the attendee can correct the details. Network errors, auth errors, throttling, and server errors must retain the original request key.
+- **Switch accounts in the same tab:** create a booking as account A, log out, then sign in as account B and open the same event checkout. B must see a fresh form rather than A's booking or pending request. Signing back in as A must still allow recovery of A's saved request.
+
+Run the checkout recovery regression tests from the repository root with Node.js:
+
+```sh
+node --test frontend/tests/booking.test.cjs
+```
 
 ## If setup or the demo fails
 

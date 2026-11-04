@@ -12,7 +12,8 @@ const quantityInput = document.querySelector('#quantity');
 const submitButton = document.querySelector('#submit-booking');
 const retryButton = document.querySelector('#retry-booking');
 const controls = [...form.querySelectorAll('input, select, button')];
-const requestStorageKey = `eventy-booking-request:${eventId}`;
+let requestStorageKey;
+let currentUser;
 const timeZone = 'Asia/Ho_Chi_Minh';
 const dateTimeFormatter = new Intl.DateTimeFormat('vi-VN', {
   dateStyle: 'full', timeStyle: 'short', timeZone,
@@ -20,7 +21,6 @@ const dateTimeFormatter = new Intl.DateTimeFormat('vi-VN', {
 
 let eventDetails;
 let requestInFlight = false;
-let retryingUnknownRequest = false;
 
 document.querySelector('#logout').addEventListener('click', logout);
 
@@ -57,7 +57,7 @@ function readStoredRequest() {
   if (!saved) return null;
   try {
     const request = JSON.parse(saved);
-    if (request?.event_id === Number(eventId) && request.key
+    if (request?.user_id === currentUser.id && request.event_id === Number(eventId) && request.key
         && (request.booking_id || request.payload)) return request;
   } catch {
     throw new Error('Không thể đọc yêu cầu đặt vé đang lưu trong phiên này.');
@@ -160,7 +160,6 @@ function renderEvent(event, user) {
 function restoreRequestIfNeeded() {
   const request = readStoredRequest();
   if (!request) return;
-  retryingUnknownRequest = true;
   document.querySelector('#event-session').value = String(request.payload.event_session_id);
   document.querySelector('#quantity').value = String(request.payload.quantity);
   document.querySelector('#attendee-name').value = request.payload.attendee_name;
@@ -217,20 +216,36 @@ function getPayload() {
 
 async function submitBooking(retryUnknown = false) {
   if (requestInFlight || (!retryUnknown && !validateForm())) return;
+  requestInFlight = true;
+  try {
+    // Recheck ownership before sending a stored payload, including after browser Back.
+    const user = await requireAuth();
+    if (user.id !== currentUser.id) {
+      await loadPage();
+      return;
+    }
+    await sendBooking(retryUnknown);
+  } catch (error) {
+    setFormMessage(error.message || 'Không thể xác minh tài khoản.');
+  } finally {
+    requestInFlight = false;
+  }
+}
+
+async function sendBooking(retryUnknown) {
   const payload = retryUnknown ? readStoredRequest()?.payload : getPayload();
   if (!payload) {
     setFormMessage('Không tìm thấy yêu cầu cần thử lại. Vui lòng kiểm tra thông tin và gửi lại.');
     retryButton.hidden = true;
     submitButton.hidden = false;
     setControlsDisabled(false);
-    retryingUnknownRequest = false;
     return;
   }
 
   let request = retryUnknown ? readStoredRequest() : null;
   try {
     if (!request) {
-      request = { event_id: Number(eventId), key: createRequestKey(), payload };
+      request = { user_id: currentUser.id, event_id: Number(eventId), key: createRequestKey(), payload };
       sessionStorage.setItem(requestStorageKey, JSON.stringify(request));
     }
   } catch (error) {
@@ -238,7 +253,6 @@ async function submitBooking(retryUnknown = false) {
     return;
   }
 
-  requestInFlight = true;
   setControlsDisabled(true);
   retryButton.hidden = true;
   submitButton.hidden = false;
@@ -250,7 +264,6 @@ async function submitBooking(retryUnknown = false) {
       body: request.payload,
     });
     if (!booking?.id) {
-      retryingUnknownRequest = true;
       setControlsDisabled(true);
       submitButton.hidden = true;
       retryButton.hidden = false;
@@ -259,14 +272,16 @@ async function submitBooking(retryUnknown = false) {
       return;
     }
     sessionStorage.setItem(requestStorageKey, JSON.stringify({
+      user_id: request.user_id,
       event_id: request.event_id,
       key: request.key,
       booking_id: booking.id,
     }));
     window.location.assign(`payment.html?booking_id=${encodeURIComponent(booking.id)}`);
   } catch (error) {
-    if (retryingUnknownRequest || !error.status || error.status < 400 || error.status >= 500) {
-      retryingUnknownRequest = true;
+    // These responses definitively reject this payload. Auth, throttling and
+    // transport errors do not establish the outcome of an earlier attempt.
+    if (![404, 409, 422].includes(error.status)) {
       setControlsDisabled(true);
       submitButton.hidden = true;
       retryButton.hidden = false;
@@ -274,14 +289,13 @@ async function submitBooking(retryUnknown = false) {
       setFormMessage(`Chưa thể xác định kết quả đặt vé: ${error.message} Dùng nút thử lại để kiểm tra cùng yêu cầu.`);
     } else {
       sessionStorage.removeItem(requestStorageKey);
-      retryingUnknownRequest = false;
+      setMessage('');
       setControlsDisabled(false);
       submitButton.hidden = false;
       retryButton.hidden = true;
       setFormMessage(error.message || 'Không thể tạo đặt vé.');
     }
   } finally {
-    requestInFlight = false;
     submitButton.textContent = 'Tiếp tục thanh toán';
   }
 }
@@ -295,6 +309,15 @@ async function loadPage() {
   setMessage('Đang tải sự kiện…');
   try {
     const user = await requireAuth();
+    if (currentUser && currentUser.id !== user.id) form.reset();
+    currentUser = user;
+    requestStorageKey = `eventy-booking-request:${user.id}:${eventId}`;
+    layout.hidden = true;
+    document.querySelector('#existing-booking').hidden = true;
+    setControlsDisabled(false);
+    submitButton.hidden = false;
+    retryButton.hidden = true;
+    setFormMessage('');
     const savedRequest = readStoredRequest();
     if (savedRequest?.booking_id) {
       document.querySelector('#existing-booking').hidden = false;
