@@ -3,6 +3,7 @@ import { apiRequest } from './api.js';
 import { logout, requireAuth } from './auth.js';
 import { retryUnavailableMessage } from './booking-status.js';
 import { localizeMessage } from './flow-messages.js';
+import { createCancelButton } from './cancel-booking.js';
 
 initializeSitePreferences();
 
@@ -19,7 +20,7 @@ let authenticated = false;
 const dateTime = { format: date => new Intl.DateTimeFormat(getLanguage() === 'en' ? 'en-GB' : 'vi-VN', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Asia/Ho_Chi_Minh' }).format(date) };
 const money = { format: value => new Intl.NumberFormat(getLanguage() === 'en' ? 'en-GB' : 'vi-VN', { style: 'currency', currency: 'VND', maximumFractionDigits: 0 }).format(value) };
 let displayedPage;
-const labels = { confirmed: t("Đã xác nhận", "Confirmed"), pending: t("Chờ thanh toán", "Awaiting payment"), payment_failed: t("Thanh toán thất bại", "Payment failed") };
+const labels = { cancelled: t('Đã hủy', 'Cancelled'), confirmed: t("Đã xác nhận", "Confirmed"), pending: t("Chờ thanh toán", "Awaiting payment"), payment_failed: t("Thanh toán thất bại", "Payment failed") };
 
 function node(tag, className, text) {
   const element = document.createElement(tag);
@@ -54,6 +55,10 @@ function row(booking) {
     }
     actions.append(link(t("Chi tiết đặt vé", "Booking details"), `confirmation.html?booking_id=${id}`));
   }
+  if (booking.status !== 'cancelled') actions.append(createCancelButton(booking, result => {
+    displayedPage.items = displayedPage.items.map(item => item.id === result.id ? { ...item, ...result } : item);
+    renderPageText();
+  }));
   item.append(info, actions);
   return item;
 }

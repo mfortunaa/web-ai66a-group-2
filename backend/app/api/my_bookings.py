@@ -54,7 +54,7 @@ def list_my_bookings(
                 venue=event.venue,
                 quantity=booking.quantity,
                 total_price_vnd=booking.total_price_vnd,
-                status=booking.status,
+                status="cancelled" if booking.cancelled_at else booking.status,
                 created_at=booking.created_at,
                 can_retry_payment=can_retry,
                 retry_unavailable_reason=unavailable_reason,

@@ -3,6 +3,7 @@ import { apiRequest } from './api.js';
 import { logout, requireAuth } from './auth.js';
 import { retryUnavailableMessage } from './booking-status.js';
 import { localizeMessage } from './flow-messages.js';
+import { createCancelButton } from './cancel-booking.js';
 
 initializeSitePreferences();
 
@@ -39,6 +40,11 @@ function formatPrice(value) {
 
 function renderBooking(booking) {
   displayedBooking = booking;
+  document.querySelector('#confirmation-cancel')?.remove();
+  if (booking.status !== 'cancelled') {
+    const cancel = createCancelButton(booking, renderBooking);
+    cancel.id = 'confirmation-cancel'; content.append(cancel);
+  }
   content.hidden = false;
   const confirmed = booking.status === 'confirmed';
   document.querySelector('#page-title').textContent =
@@ -66,6 +72,10 @@ function renderBooking(booking) {
   paymentLink.href = `payment.html?booking_id=${encodeURIComponent(booking.id)}`;
   if (!confirmed && booking.can_retry_payment !== true) {
     setMessage(retryUnavailableMessage(booking.retry_unavailable_reason), true);
+  }
+  if (booking.status === 'cancelled') {
+    document.querySelector('#page-title').textContent = t('Đặt vé đã hủy', 'Booking cancelled');
+    status.textContent = t('Đã hủy', 'Cancelled');
   }
 }
 

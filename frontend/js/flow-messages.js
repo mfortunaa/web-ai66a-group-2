@@ -1,5 +1,8 @@
 import { translate, getLanguage } from './site-preferences.js';
 const messages = {
+  "Đã hủy": "Cancelled",
+  "Đặt vé đã hủy. Không hoàn tiền và không thể thanh toán lại.": "This booking is cancelled. No refund is issued and payment cannot be resumed.",
+  "Cancelled bookings cannot be paid": "Cancelled bookings cannot be paid",
   "Không thể kết nối máy chủ. Vui lòng thử lại sau.": "Cannot connect to the server. Please try again later.",
   "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.": "Your session has expired. Please sign in again.",
   "Bạn không có quyền thực hiện thao tác này.": "You do not have permission to perform this action.",

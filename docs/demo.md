@@ -57,6 +57,9 @@ node --test frontend/tests/booking.test.cjs
 
 ## My Bookings checks
 
+- Choose **Hủy đặt vé** in My Bookings or booking details. The modal must show the booking reference and **Hủy đặt vé không được hoàn tiền**. **Giữ đặt vé** and Escape must close it without sending a cancellation. Only **Xác nhận hủy** submits the action.
+- Cancel a pending/failed/confirmed booking. The history and details show **Đã hủy**, no payment or cancellation action remains, refreshing keeps it cancelled, and a stale payment URL cannot resume it. Cancellation never refunds or releases consumed stock. Test both languages/themes and keyboard focus in the modal.
+
 - Use a new account: **Vé của tôi** must show an empty state with a catalog link.
 - Fail a simulated payment, open **Vé của tôi**, choose **Thử thanh toán lại**, and complete the original booking. Return to the list (including browser Back); it must refresh to **Đã xác nhận**, without consuming stock twice.
 - Open a pending booking after sales close or stock runs out: the list explains why payment is unavailable. Open a stale payment URL directly; it must reload the current eligibility and hide payment actions. The backend still rejects a stale success request.

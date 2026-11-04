@@ -4,6 +4,12 @@ from sqlalchemy import inspect, text
 from app.db.session import engine, create_db_and_tables
 
 
+def migrate_booking_cancellation(connection):
+    columns = {c["name"] for c in inspect(connection).get_columns("bookings")}
+    if "cancelled_at" not in columns:
+        connection.execute(text("ALTER TABLE bookings ADD COLUMN cancelled_at DATETIME"))
+
+
 def migrate():
     parser = argparse.ArgumentParser(description="Migrate auth; optionally verify one explicit development account.")
     parser.add_argument("--verify-email")
@@ -15,6 +21,8 @@ def migrate():
                 if name not in columns:
                     connection.execute(text(f"ALTER TABLE users ADD COLUMN {name} {definition}"))
     create_db_and_tables()
+    with engine.begin() as connection:
+        migrate_booking_cancellation(connection)
     if args.verify_email:
         with engine.begin() as connection:
             result = connection.execute(text("UPDATE users SET is_email_verified=1 WHERE email=:email"), {"email": args.verify_email.strip().lower()})

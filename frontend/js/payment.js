@@ -89,6 +89,7 @@ function renderBooking(booking, notice = '') {
     result.className = 'payment-result error';
     checkButton.hidden = false;
   }
+  if (booking.status === 'cancelled') status.textContent = t('Đã hủy', 'Cancelled');
 }
 
 function setActionButtonsDisabled(disabled) {

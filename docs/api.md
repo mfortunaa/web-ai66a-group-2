@@ -16,6 +16,8 @@ Authentication and event endpoints are implemented; booking endpoints are implem
 
 ## Booking API contract
 
+`POST /api/bookings/{booking_id}/cancel` cancels an owned booking (401 without login, 403 for another owner, 404 if missing). It returns the booking with `status: "cancelled"`, UTC `cancelled_at`, `can_retry_payment: false`, and reason `cancelled`. Repeated cancellation returns the first cancellation timestamp. Cancellation is non-refundable and permanent: stored totals, `paid_at`, and consumed stock remain unchanged. Both payment outcomes return 409 after cancellation. The database preserves the original payment status for audit and exposes the cancelled state when `cancelled_at` is set. Startup migration adds this nullable column without rebuilding or removing existing bookings.
+
 `GET /api/bookings?limit=10&offset=0` requires a bearer JWT and returns only that user's bookings, ordered by `created_at DESC, id DESC`. `limit` defaults to 10 (1–50); `offset` defaults to 0 (0–10000). The `total` counts all bookings owned by the user, before pagination. Empty accounts return `items: []` and `total: 0`.
 
 ```json

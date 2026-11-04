@@ -14,7 +14,7 @@ class MyBookingItem(BaseModel):
     venue: str
     quantity: int
     total_price_vnd: int
-    status: Literal["pending", "confirmed", "payment_failed"]
+    status: Literal["pending", "confirmed", "payment_failed", "cancelled"]
     created_at: datetime
     can_retry_payment: bool
     retry_unavailable_reason: str | None

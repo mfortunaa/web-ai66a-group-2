@@ -16,7 +16,7 @@ function element(tag = 'div') {
 function setup(transport = async () => pageData([]), authenticate = async () => ({})) {
   const nodes = new Map(); const requests = []; const events = {};
   const get = selector => { if (!nodes.has(selector)) nodes.set(selector, element()); return nodes.get(selector); };
-  const context = vm.createContext({ t: (vi, en) => vi, getLanguage: () => 'vi', initializeSitePreferences() {}, localizeMessage: text => text, Intl, Date, Object, Number, encodeURIComponent,
+  const context = vm.createContext({ createCancelButton: () => element('button'), t: (vi, en) => vi, getLanguage: () => 'vi', initializeSitePreferences() {}, localizeMessage: text => text, Intl, Date, Object, Number, encodeURIComponent,
     document: { querySelector: get, createElement: element },
     window: { addEventListener: (event, fn) => { events[event] = fn; } },
     requireAuth: authenticate, logout() {},
@@ -37,6 +37,16 @@ test('empty account shows catalog empty state, not invented tickets', async () =
   assert.equal(ui.get('#bookings-empty').hidden, false);
   assert.equal(ui.get('#bookings-content').hidden, true);
   assert.equal(ui.get('#bookings-list').children.length, 0);
+});
+test('cancelled history remains visible without payment or another cancel action', async () => {
+  const ui = setup(async () => pageData([booking({ status: 'cancelled', can_retry_payment: false, retry_unavailable_reason: 'cancelled' })]));
+  await ui.load();
+  assert.equal(ui.get('#bookings-content').hidden, false);
+  const nodes = descendants(ui.get('#bookings-list'));
+  assert.ok(nodes.some(n => n.textContent === 'Đã hủy'));
+  assert.ok(!nodes.some(n => n.href?.startsWith('payment')));
+  assert.ok(!nodes.some(n => n.tag === 'button'));
+  assert.ok(nodes.some(n => n.href === 'confirmation.html?booking_id=8'));
 });
 test('statuses select the original booking destination and render server strings as text', async () => {
   const ui = setup(async () => pageData([booking(), booking({ id: 9, status: 'confirmed', can_retry_payment: false }), booking({ id: 10, status: 'payment_failed' })]));
