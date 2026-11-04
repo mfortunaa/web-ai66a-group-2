@@ -32,10 +32,10 @@ function page(entries = [], transport = async () => ({ id: 99 })) {
     sale_status: 'on_sale', is_bookable: true,
     sessions: [{ id: 20, is_bookable: true, available_tickets: 10,
       starts_at: '2026-12-01T12:00:00Z' }] };
-  const context = vm.createContext({ console, Intl, URLSearchParams,
+  const context = vm.createContext({ t: (vi, en) => vi, getLanguage: () => 'vi', initializeSitePreferences() {}, localizeMessage: text => text, console, Intl, URLSearchParams,
     crypto: { randomUUID: () => 'new-request-key' },
     document: { querySelector: node, createElement: () => node(`option-${nodes.size}`) },
-    window: { location: { search: '?event_id=2', assign: url => navigations.push(url) } },
+    window: { addEventListener() {}, location: { search: '?event_id=2', assign: url => navigations.push(url) } },
     sessionStorage: { getItem: k => storage.get(k) ?? null,
       setItem: (k, v) => storage.set(k, v), removeItem: k => storage.delete(k) },
     requireAuth: async () => user, logout() {},

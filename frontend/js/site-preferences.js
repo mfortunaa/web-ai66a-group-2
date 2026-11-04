@@ -83,6 +83,24 @@ export function initializeSitePreferences() {
     applyTheme();
   });
 
+  function syncSavedPreferences() {
+    const savedLanguage = readPreference(LANGUAGE_KEY, language) === 'en' ? 'en' : 'vi';
+    const savedTheme = readPreference(THEME_KEY, theme) === 'dark' ? 'dark' : 'light';
+    const languageChanged = savedLanguage !== language;
+    language = savedLanguage;
+    theme = savedTheme;
+    applyTheme();
+    if (languageChanged) applyLanguage();
+  }
+
+  // Back/Forward may restore a whole page, including its old module state.
+  // Other tabs can also change the preferences while this page is open.
+  window.addEventListener('pageshow', syncSavedPreferences);
+  window.addEventListener('focus', syncSavedPreferences);
+  window.addEventListener('storage', event => {
+    if (event.key === LANGUAGE_KEY || event.key === THEME_KEY || event.key === null) syncSavedPreferences();
+  });
+
   applyTheme();
   applyLanguage();
 }

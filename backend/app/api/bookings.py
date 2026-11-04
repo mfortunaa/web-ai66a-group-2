@@ -20,11 +20,15 @@ DbSession = Annotated[Session, Depends(get_session)]
 def _read(session: Session, booking: Booking) -> BookingRead:
     event = session.get(Event, booking.event_id)
     event_session = session.get(EventSession, booking.event_session_id)
+    can_retry, unavailable_reason = service.payment_retry_status(session, booking)
     return BookingRead(
-        **booking.model_dump(),
+        **booking.model_dump(exclude={"status"}),
+        status="cancelled" if booking.cancelled_at else booking.status,
         event_title=event.title,
         session_starts_at=event_session.starts_at,
         session_ends_at=event_session.ends_at,
+        can_retry_payment=can_retry,
+        retry_unavailable_reason=unavailable_reason,
     )
 
 
@@ -53,6 +57,14 @@ def create_booking(
 def read_booking(booking_id: int, user: CurrentUser, session: DbSession):
     try:
         return _read(session, service.get_booking(session, user.id, booking_id))
+    except service.BookingError as error:
+        raise _http(error)
+
+
+@router.post("/{booking_id}/cancel", response_model=BookingRead)
+def cancel_booking(booking_id: int, user: CurrentUser, session: DbSession):
+    try:
+        return _read(session, service.cancel_booking(session, user.id, booking_id))
     except service.BookingError as error:
         raise _http(error)
 

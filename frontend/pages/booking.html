@@ -4,10 +4,11 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Đăng ký vé sự kiện trên Eventy.">
-  <title>Đặt vé | Eventy</title>
+  <title data-i18n-vi="Đặt vé | Eventy" data-i18n-en="Book tickets | Eventy">Đặt vé | Eventy</title>
+  <script src="../js/site-preferences-init.js?v=2"></script>
   <link rel="stylesheet" href="../css/common.css">
   <link rel="stylesheet" href="../css/booking.css">
-  <script type="module" src="../js/booking.js"></script>
+  <script type="module" src="../js/booking.js?v=2"></script>
 </head>
 <body>
   <div class="site-shell">
@@ -16,51 +17,54 @@
         <svg class="brand-mark" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h18v5a2 2 0 0 0 0 4v5H3v-5a2 2 0 0 0 0-4V5Z"/><path d="M15 5v14" stroke-dasharray="2 2"/></svg>
         <span>eventy</span>
       </a>
-      <nav class="site-nav" aria-label="Điều hướng chính">
-        <a class="nav-link" href="events.html">Sự kiện</a>
-        <button id="logout" class="secondary" type="button">Đăng xuất</button>
+      <nav class="site-nav" aria-label="Điều hướng chính" data-i18n-aria-vi="Điều hướng chính" data-i18n-aria-en="Main navigation">
+        <a class="nav-link" href="events.html" data-i18n-vi="Sự kiện" data-i18n-en="Events">Sự kiện</a>
+        <a class="nav-link" href="my-bookings.html" data-i18n-vi="Vé của tôi" data-i18n-en="My bookings">Vé của tôi</a>
+        <button id="language-toggle" class="header-control" type="button">EN</button>
+        <button id="theme-toggle" class="header-control" type="button" aria-pressed="false"><span data-theme-icon aria-hidden="true">◐</span><span data-theme-label>Giao diện tối</span></button>
+        <button id="logout" class="secondary" type="button" data-i18n-vi="Đăng xuất" data-i18n-en="Log out">Đăng xuất</button>
       </nav>
     </header>
 
     <main class="flow-main">
-      <a id="back-link" class="back-link" href="events.html">← Quay lại sự kiện</a>
-      <p class="eyebrow">ĐĂNG KÝ THAM DỰ</p>
-      <h1>Đặt vé sự kiện</h1>
+      <a id="back-link" class="back-link" href="events.html" data-i18n-vi="← Quay lại sự kiện" data-i18n-en="← Back to event">← Quay lại sự kiện</a>
+      <p class="eyebrow" data-i18n-vi="ĐĂNG KÝ THAM DỰ" data-i18n-en="BOOK TICKETS">ĐĂNG KÝ THAM DỰ</p>
+      <h1 data-i18n-vi="Đặt vé sự kiện" data-i18n-en="Book event tickets">Đặt vé sự kiện</h1>
       <p id="page-message" class="page-message" role="status" aria-live="polite">Đang tải sự kiện…</p>
-      <button id="retry-load" class="button-secondary" type="button" hidden>Thử tải lại</button>
+      <button id="retry-load" class="button-secondary" type="button" hidden data-i18n-vi="Thử tải lại" data-i18n-en="Try again">Thử tải lại</button>
       <section id="existing-booking" class="existing-booking" hidden aria-labelledby="existing-booking-title">
-        <h2 id="existing-booking-title">Bạn đã có đặt vé cho luồng này</h2>
-        <p>Để tránh tạo đặt vé trùng khi quay lại trang, hãy tiếp tục đặt vé hiện có hoặc chủ động bắt đầu một lượt đặt mới.</p>
-        <a id="open-existing-booking" class="button-primary" href="events.html">Tiếp tục đặt vé</a>
-        <button id="start-new-booking" class="button-secondary" type="button">Bắt đầu lượt đặt mới</button>
+        <h2 id="existing-booking-title" data-i18n-vi="Bạn đã có đặt vé cho luồng này" data-i18n-en="You already have a booking">Bạn đã có đặt vé cho luồng này</h2>
+        <p data-i18n-vi="Để tránh tạo đặt vé trùng khi quay lại trang, hãy tiếp tục đặt vé hiện có hoặc chủ động bắt đầu một lượt đặt mới." data-i18n-en="Continue your existing booking, or explicitly start a new one to avoid creating duplicates.">Để tránh tạo đặt vé trùng khi quay lại trang, hãy tiếp tục đặt vé hiện có hoặc chủ động bắt đầu một lượt đặt mới.</p>
+        <a id="open-existing-booking" class="button-primary" href="events.html" data-i18n-vi="Tiếp tục đặt vé" data-i18n-en="Continue booking">Tiếp tục đặt vé</a>
+        <button id="start-new-booking" class="button-secondary" type="button" data-i18n-vi="Bắt đầu lượt đặt mới" data-i18n-en="Start a new booking">Bắt đầu lượt đặt mới</button>
       </section>
 
       <div id="booking-layout" class="booking-layout" hidden>
         <section class="event-summary" aria-labelledby="event-title">
-          <p class="eyebrow">THÔNG TIN SỰ KIỆN</p>
+          <p class="eyebrow" data-i18n-vi="THÔNG TIN SỰ KIỆN" data-i18n-en="EVENT DETAILS">THÔNG TIN SỰ KIỆN</p>
           <h2 id="event-title"></h2>
           <p id="event-time"></p>
           <p id="event-venue"></p>
           <p id="event-address"></p>
-          <p class="ticket-price"><span>Giá vé</span><strong id="event-price"></strong></p>
+          <p class="ticket-price"><span data-i18n-vi="Giá vé" data-i18n-en="Ticket price">Giá vé</span><strong id="event-price"></strong></p>
         </section>
 
         <form id="booking-form" class="booking-form" novalidate>
-          <h2>Thông tin người tham dự</h2>
-          <p class="form-help">Các mục có dấu * là bắt buộc. Thanh toán trong bản demo được mô phỏng; không nhập thông tin thẻ hoặc tài khoản ngân hàng.</p>
+          <h2 data-i18n-vi="Thông tin người tham dự" data-i18n-en="Attendee details">Thông tin người tham dự</h2>
+          <p class="form-help" data-i18n-vi="Các mục có dấu * là bắt buộc. Thanh toán trong bản demo được mô phỏng; không nhập thông tin thẻ hoặc tài khoản ngân hàng." data-i18n-en="Fields marked * are required. Payment is simulated; do not enter card or bank details.">Các mục có dấu * là bắt buộc. Thanh toán trong bản demo được mô phỏng; không nhập thông tin thẻ hoặc tài khoản ngân hàng.</p>
 
           <div class="field">
-            <label for="event-session">Suất diễn *</label>
+            <label for="event-session" data-i18n-vi="Suất diễn *" data-i18n-en="Performance *">Suất diễn *</label>
             <select id="event-session" name="event_session_id" required></select>
             <small id="session-help"></small>
           </div>
           <div class="field">
-            <label for="quantity">Số lượng vé *</label>
+            <label for="quantity" data-i18n-vi="Số lượng vé *" data-i18n-en="Ticket quantity *">Số lượng vé *</label>
             <input id="quantity" name="quantity" type="number" min="1" step="1" value="1" inputmode="numeric" required>
             <small id="availability-help"></small>
           </div>
           <div class="field">
-            <label for="attendee-name">Họ và tên *</label>
+            <label for="attendee-name" data-i18n-vi="Họ và tên *" data-i18n-en="Full name *">Họ và tên *</label>
             <input id="attendee-name" name="attendee_name" type="text" minlength="2" maxlength="120" autocomplete="name" required>
           </div>
           <div class="field">
@@ -68,23 +72,23 @@
             <input id="attendee-email" name="attendee_email" type="email" maxlength="254" autocomplete="email" required>
           </div>
           <div class="field">
-            <label for="attendee-phone">Số điện thoại *</label>
+            <label for="attendee-phone" data-i18n-vi="Số điện thoại *" data-i18n-en="Phone number *">Số điện thoại *</label>
             <input id="attendee-phone" name="attendee_phone" type="tel" maxlength="20" autocomplete="tel" inputmode="tel" required>
-            <small>Nhập 8–15 chữ số; có thể dùng dấu +, dấu cách, dấu chấm hoặc gạch nối.</small>
+            <small data-i18n-vi="Nhập 8–15 chữ số; có thể dùng dấu +, dấu cách, dấu chấm hoặc gạch nối." data-i18n-en="Enter 8–15 digits; +, spaces, dots and hyphens are allowed.">Nhập 8–15 chữ số; có thể dùng dấu +, dấu cách, dấu chấm hoặc gạch nối.</small>
           </div>
 
           <div class="total-panel" aria-live="polite">
-            <span>Tạm tính</span>
+            <span data-i18n-vi="Tạm tính" data-i18n-en="Estimated total">Tạm tính</span>
             <strong id="estimated-total">—</strong>
-            <small>Thành tiền cuối cùng do máy chủ xác nhận.</small>
+            <small data-i18n-vi="Thành tiền cuối cùng do máy chủ xác nhận." data-i18n-en="The final total is confirmed by the server.">Thành tiền cuối cùng do máy chủ xác nhận.</small>
           </div>
           <p id="form-message" class="form-message" role="alert" aria-live="assertive"></p>
           <button id="submit-booking" class="button-primary submit-button" type="submit">Tiếp tục thanh toán</button>
-          <button id="retry-booking" class="button-secondary retry-button" type="button" hidden>Thử lại cùng yêu cầu</button>
+          <button id="retry-booking" class="button-secondary retry-button" type="button" hidden data-i18n-vi="Thử lại cùng yêu cầu" data-i18n-en="Retry the same request">Thử lại cùng yêu cầu</button>
         </form>
       </div>
     </main>
-    <footer class="site-footer">Eventy · Thanh toán mô phỏng, không thu thập thông tin thanh toán thật</footer>
+    <footer class="site-footer" data-i18n-vi="Eventy · Thanh toán mô phỏng, không thu thập thông tin thanh toán thật" data-i18n-en="Eventy · Simulated payment; no real payment details collected">Eventy · Thanh toán mô phỏng, không thu thập thông tin thanh toán thật</footer>
   </div>
 </body>
 </html>

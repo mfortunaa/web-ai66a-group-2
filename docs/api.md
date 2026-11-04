@@ -10,10 +10,31 @@ Authentication and event endpoints are implemented; booking endpoints are implem
 | GET | `/api/events` | List events with optional `sale_status`, `date_from`, `date_to` filters | 200 |
 | GET | `/api/events/{event_id}` | Return event details and current availability | 200 |
 | POST | `/api/bookings` | Create a pending booking with event session ID, quantity, and attendee details | 201 |
+| GET | `/api/bookings` | List the current user's bookings with bounded pagination | 200 |
 | GET | `/api/bookings/{booking_id}` | Return an owned booking and confirmation details | 200 |
 | POST | `/api/bookings/{booking_id}/simulate-payment` | Simulate success or failure; confirm and consume stock on success | 200 |
 
 ## Booking API contract
+
+`POST /api/bookings/{booking_id}/cancel` cancels an owned booking (401 without login, 403 for another owner, 404 if missing). It returns the booking with `status: "cancelled"`, UTC `cancelled_at`, `can_retry_payment: false`, and reason `cancelled`. Repeated cancellation returns the first cancellation timestamp. Cancellation is non-refundable and permanent: stored totals, `paid_at`, and consumed stock remain unchanged. Both payment outcomes return 409 after cancellation. The database preserves the original payment status for audit and exposes the cancelled state when `cancelled_at` is set. Startup migration adds this nullable column without rebuilding or removing existing bookings.
+
+`GET /api/bookings?limit=10&offset=0` requires a bearer JWT and returns only that user's bookings, ordered by `created_at DESC, id DESC`. `limit` defaults to 10 (1–50); `offset` defaults to 0 (0–10000). The `total` counts all bookings owned by the user, before pagination. Empty accounts return `items: []` and `total: 0`.
+
+```json
+{
+  "items": [{
+    "id": 7, "reference": "BK-3F9A1C2D", "event_id": 1,
+    "event_title": "Evening show", "venue": "Event venue",
+    "session_starts_at": "2027-01-17T09:00:00Z", "session_ends_at": "2027-01-17T15:30:00Z",
+    "quantity": 2, "total_price_vnd": 998000, "status": "pending",
+    "created_at": "2026-11-05T03:00:00Z", "can_retry_payment": true,
+    "retry_unavailable_reason": null
+  }],
+  "total": 1, "limit": 10, "offset": 0
+}
+```
+
+`can_retry_payment` and `retry_unavailable_reason` are also returned by booking create, detail, and payment responses. Reasons are `already_confirmed`, `not_retryable`, `event_unavailable`, `sales_not_open`, `sales_closed`, or `tickets_unavailable`. The flag is advisory: payment must reload current booking state and the backend rechecks sales and stock atomically on success. Resume using the original booking ID; do not create another booking. Prices are stored integer VND snapshots; timestamps are UTC and displayed in `Asia/Ho_Chi_Minh`.
 
 `POST /api/bookings` (optional header `Idempotency-Key`, 8–128 chars, unique per user):
 

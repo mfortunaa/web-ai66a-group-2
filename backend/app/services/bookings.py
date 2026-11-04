@@ -99,20 +99,70 @@ def get_booking(session: Session, user_id: int, booking_id: int) -> Booking:
     return booking
 
 
+def payment_retry_status(
+    session: Session,
+    booking: Booking,
+    now: datetime | None = None,
+) -> tuple[bool, str | None]:
+    if booking.cancelled_at is not None:
+        return False, "cancelled"
+    if booking.status == BookingStatus.CONFIRMED.value:
+        return False, "already_confirmed"
+    if booking.status not in OPEN_STATES:
+        return False, "not_retryable"
+
+    event = session.get(Event, booking.event_id)
+    event_session = session.get(EventSession, booking.event_session_id)
+    if event is None or event_session is None:
+        return False, "event_unavailable"
+
+    current_time = as_utc(now or utcnow())
+    try:
+        _check_bookable(event, event_session, current_time)
+    except BookingError as error:
+        if "not opened" in error.message:
+            return False, "sales_not_open"
+        return False, "sales_closed"
+
+    if (
+        event_session.capacity - event_session.tickets_sold < booking.quantity
+        or event.capacity - event.tickets_sold < booking.quantity
+    ):
+        return False, "tickets_unavailable"
+    return True, None
+
+
+def cancel_booking(session: Session, user_id: int, booking_id: int) -> Booking:
+    booking = get_booking(session, user_id, booking_id)
+    # No refund or stock release. Repeating this action retains the first timestamp.
+    session.execute(
+        update(Booking).where(Booking.id == booking.id, Booking.cancelled_at.is_(None))
+        .values(cancelled_at=utcnow(), updated_at=utcnow()),
+        execution_options={"synchronize_session": False},
+    )
+    session.commit()
+    session.refresh(booking)
+    return booking
+
+
 def simulate_payment(session: Session, user_id: int, booking_id: int, outcome: str) -> Booking:
     booking = get_booking(session, user_id, booking_id)
+    if booking.cancelled_at is not None:
+        raise BookingError(409, "Cancelled bookings cannot be paid")
     if booking.status == BookingStatus.CONFIRMED.value:
         return booking
     now = utcnow()
     if outcome == "failure":
         # Conditional: can never overwrite a concurrent confirmation.
         session.execute(
-            update(Booking).where(Booking.id == booking.id, Booking.status.in_(OPEN_STATES))
+            update(Booking).where(Booking.id == booking.id, Booking.status.in_(OPEN_STATES), Booking.cancelled_at.is_(None))
             .values(status=BookingStatus.PAYMENT_FAILED.value, updated_at=now),
             execution_options={"synchronize_session": False},
         )
         session.commit()
         session.refresh(booking)
+        if booking.cancelled_at is not None:
+            raise BookingError(409, "Cancelled bookings cannot be paid")
         return booking
     event = session.get(Event, booking.event_id)
     event_session = session.get(EventSession, booking.event_session_id)
@@ -120,13 +170,15 @@ def simulate_payment(session: Session, user_id: int, booking_id: int, outcome: s
         raise BookingError(404, "Event session not found")
     _check_bookable(event, event_session, now)
     claimed = session.execute(
-        update(Booking).where(Booking.id == booking.id, Booking.status.in_(OPEN_STATES))
+        update(Booking).where(Booking.id == booking.id, Booking.status.in_(OPEN_STATES), Booking.cancelled_at.is_(None))
         .values(status=BookingStatus.CONFIRMED.value, paid_at=now, updated_at=now),
         execution_options={"synchronize_session": False},
     )
     if claimed.rowcount == 0:  # someone else confirmed first: idempotent
         session.rollback()
         session.refresh(booking)
+        if booking.cancelled_at is not None:
+            raise BookingError(409, "Cancelled bookings cannot be paid")
         return booking
     session_stock = session.execute(
         update(EventSession)

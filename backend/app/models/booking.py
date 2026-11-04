@@ -42,3 +42,5 @@ class Booking(SQLModel, table=True):
     created_at: datetime = Field(default_factory=utcnow, sa_type=DateTime(timezone=True))
     updated_at: datetime = Field(default_factory=utcnow, sa_type=DateTime(timezone=True))
     paid_at: datetime | None = Field(default=None, sa_type=DateTime(timezone=True))
+    # Keep the original payment state for audit; API exposes cancelled when set.
+    cancelled_at: datetime | None = Field(default=None, sa_type=DateTime(timezone=True))

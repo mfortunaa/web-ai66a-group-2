@@ -49,11 +49,14 @@ class BookingRead(BaseModel):
     attendee_name: str
     attendee_email: str
     attendee_phone: str
-    status: Literal["pending", "confirmed", "payment_failed"]
+    status: Literal["pending", "confirmed", "payment_failed", "cancelled"]
     created_at: datetime
     paid_at: datetime | None = None
+    cancelled_at: datetime | None = None
+    can_retry_payment: bool
+    retry_unavailable_reason: str | None
 
-    @field_validator("session_starts_at", "session_ends_at", "created_at", "paid_at")
+    @field_validator("session_starts_at", "session_ends_at", "created_at", "paid_at", "cancelled_at")
     @classmethod
     def normalize_datetime(cls, value: datetime | None) -> datetime | None:
         if value is None:
@@ -63,6 +66,6 @@ class BookingRead(BaseModel):
             return value.replace(tzinfo=timezone.utc)
         return value.astimezone(timezone.utc)
 
-    @field_serializer("session_starts_at", "session_ends_at", "created_at", "paid_at")
+    @field_serializer("session_starts_at", "session_ends_at", "created_at", "paid_at", "cancelled_at")
     def serialize_datetime(self, value: datetime | None) -> str | None:
         return value.isoformat().replace("+00:00", "Z") if value is not None else None
