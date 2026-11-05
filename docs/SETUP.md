@@ -4,6 +4,21 @@
 
 This runs the existing FastAPI server (including the frontend), SQLite and a local Mailpit inbox. Install Docker Desktop with Linux containers and Docker Compose v2+ (`docker compose version`). Start Docker Desktop first. The Docker route needs no host Python or separately installed Mailpit. First build requires internet to download the images and Python packages.
 
+### 1. Get the project on a new machine
+
+Install Git if you want to clone the repository, then run in PowerShell:
+
+```powershell
+git clone https://github.com/mfortunaa/web-ai66a-group-2.git
+Set-Location web-ai66a-group-2
+docker version
+docker compose version
+```
+
+Alternatively, download and extract the repository ZIP, then open PowerShell in the extracted folder containing `compose.yaml`. Git is not required for the ZIP route. `docker version` must show both Client and Server; if the Server is unavailable, start Docker Desktop and wait for it to be ready.
+
+### 2. Configure and start Docker
+
 From the repository root, create the Docker-only `.env` once. This is separate from the native Python setup's `backend/.env`; neither file is copied into the image.
 
 ```powershell
@@ -31,15 +46,29 @@ Keep your `.env` and key between runs; do not overwrite an existing configured `
 
 Both published ports bind to loopback. SMTP is available to the backend at `mailpit:1025` inside Compose and is not published on the host. The Compose environment configures the existing #6 mail adapter, using no SMTP credentials or external delivery. Mailpit does not relay messages externally. The image runs the app as a non-root user and checks `/health`; the backend waits for Mailpit readiness and runs the repeatable auth migration before starting. A fresh volume starts empty. Native `backend/eventy.db` is not imported or modified.
 
-Optional: populate events, then open the app and register → read OTP in Mailpit → verify → log in. Use “Quên mật khẩu?” and the captured reset link to test recovery; the old password and older JWTs must fail. No test messages should be sent to real users.
+### 3. Load data: sample events or an existing database
+
+Choose one route after the services start:
+
+- **New installation with sample events:** run the seed command below. It creates events and sessions, but no shared test accounts.
+- **Use a database supplied by a teammate or from another machine:** follow [Import an existing SQLite database](#import-an-existing-sqlite-database) below. You do not need to seed events if the imported database already contains them.
 
 ```powershell
 docker compose exec backend python -m scripts.seed_events --refresh-demo-dates
+```
+
+### 4. Open the app and verify the flow
+
+Open http://localhost:8080 and register → read OTP at http://localhost:8025 → verify → log in. If you imported a database, you can sign in with an existing verified account; unverified accounts still need an emailed OTP. Use “Quên mật khẩu?” and the captured reset link to test recovery; the old password and older JWTs must fail. No test messages should be sent to real users.
+
+```powershell
 # Repeatable integration check: creates one disposable test account and local emails.
 docker compose exec -T backend python -m scripts.check_docker
 ```
 
 The check exercises the real SMTP path, OTP, recovery/reset, single-use challenges, JWT revocation, event authorization and login cooldowns without printing secrets. It leaves its test account and emails in the local demo database/inbox. Do not run repeatedly against a shared demo in a short interval: normal auth request quotas apply.
+
+### Stop, restart and rebuild
 
 ```powershell
 docker compose ps
@@ -54,7 +83,9 @@ docker compose down
 
 Normal restart, rebuild and `down` retain both volumes, including email verification, reset challenges and login-limit counters. Keep the same Compose project name/directory to reuse those volumes. `docker compose down --volumes` explicitly deletes the project's database and captured messages; use it only when you intentionally want to discard all demo data. Native database files are unaffected.
 
-For a consistent backup, stop the backend before copying SQLite, then start it again:
+### Export a SQLite backup
+
+Run these commands from the repository root on the source machine. For a consistent backup, stop the backend before copying SQLite, then start it again:
 
 ```powershell
 docker compose stop backend
@@ -62,7 +93,32 @@ docker compose cp backend:/data/eventy.db ./eventy-backup.sqlite
 docker compose start --wait backend
 ```
 
-Do not copy a native database into a running container. Back it up first if you intentionally migrate existing data; the Docker startup migration adds auth columns without verifying old accounts. Existing users still need emailed verification, as described below.
+This copies data **from Docker to your machine**. Send `eventy-backup.sqlite` to the destination machine if you want to transfer that database.
+
+### Import an existing SQLite database
+
+Complete steps 1 and 2 on the destination machine first so that the containers and database volume exist. Place the supplied `eventy-backup.sqlite` in the repository root, beside `compose.yaml`. If the source is a native `backend/eventy.db`, stop the native backend before making its backup and use that backup as the input file.
+
+The import replaces the destination database, including its accounts, events and bookings. Stop the destination backend and preserve its current database first. Choose a different backup filename if `eventy-before-import.sqlite` already exists:
+
+```powershell
+Test-Path ./eventy-backup.sqlite # Must return True before continuing.
+docker compose stop backend
+docker compose cp backend:/data/eventy.db ./eventy-before-import.sqlite
+```
+
+After the backup succeeds, copy the supplied database **from your machine into Docker**. Restore its ownership because the backend runs as UID 10001, then start the backend to run the repeatable auth migration:
+
+```powershell
+docker compose cp ./eventy-backup.sqlite backend:/data/eventy.db
+docker compose run --rm --no-deps --user root backend chown 10001:10001 /data/eventy.db
+docker compose start --wait backend
+docker compose ps
+```
+
+Continue only if each command succeeds. If startup fails, inspect `docker compose logs --tail=100 backend`. Open http://localhost:8080 and sign in again to check the imported data. The destination uses its own configured signing key, so existing browser sessions may require a new login. The startup migration adds auth columns without verifying old accounts; use emailed verification as described below. This transfers only the application database; Mailpit's captured inbox is stored separately.
+
+### Ports and troubleshooting
 
 Reserve port 5500 for the optional standalone frontend. If 8080/8025 is occupied, change `EVENTY_HTTP_PORT` / `EVENTY_MAIL_PORT` in the root `.env` and rerun `docker compose up -d --wait`. The backend derives its emailed reset-link origin from `EVENTY_HTTP_PORT`; open the app at `http://localhost:<that port>`. The frontend uses the same origin, including custom ports. Native FastAPI (8000) and standalone frontend (5500) remain supported. After changes to Compose environment, use `up`, not only `restart`, to recreate services with the new values.
 
