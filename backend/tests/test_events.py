@@ -86,6 +86,29 @@ def test_event_routes_require_authentication(client):
     assert client.get("/api/events/1").status_code == 401
 
 
+def test_public_highlights_are_limited_and_prioritize_upcoming_events(client, db_engine):
+    assert client.get("/api/events/highlights").json() == []
+    add_events(
+        db_engine,
+        make_event("future", NOW + timedelta(days=1)),
+        make_event("ongoing", NOW - timedelta(hours=1)),
+        *(make_event(f"past-{days}", NOW - timedelta(days=days)) for days in range(1, 9)),
+    )
+
+    response = client.get("/api/events/highlights")
+    assert response.status_code == 200
+    items = response.json()
+    assert items[0] == {
+        "title": "Event ongoing",
+        "venue": "Demo venue",
+        "image_url": "/assets/images/events/concert-under-the-stars.svg",
+        "is_past": False,
+    }
+    assert items[1]["title"] == "Event future"
+    assert [item["title"] for item in items[2:]] == [f"Event past-{days}" for days in range(1, 7)]
+    assert all(item["is_past"] for item in items[2:])
+
+
 def test_event_posters_are_served_from_seed_urls(client, db_engine):
     from scripts.seed_events import seed_events
 

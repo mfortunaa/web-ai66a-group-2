@@ -4,8 +4,9 @@
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Tạo tài khoản | Eventy</title>
   <link rel="stylesheet" href="../css/auth.css">
-  <link rel="stylesheet" href="../css/auth-entry.css">
+  <link rel="stylesheet" href="../css/auth-entry.css?v=2">
   <script type="module" src="../js/auth-pages.js"></script>
+  <script type="module" src="../js/auth-event-carousel.js?v=2"></script>
 </head>
 <body class="auth-entry-page register-page">
   <div class="auth-shell">
@@ -26,12 +27,29 @@
         <noscript><p class="message">Vui lòng bật JavaScript để đăng ký hoặc đăng nhập.</p></noscript>
       </section>
       <aside class="intro" aria-labelledby="intro-title">
-        <h2 id="intro-title">Hẹn bạn ở<br>sự kiện tiếp theo.</h2>
+        <h2 id="intro-title">Đợi bạn ở<br>sự kiện tiếp theo.</h2>
         <p>Đêm nhạc bạn chờ. Workshop bạn thích. <br>Những cuộc hẹn bắt đầu từ đây.</p>
-        <figure class="event-ticket">
-          <img src="../assets/images/events/Workshop-Botanical-Art.webp" alt="Workshop tranh thực vật ép Botanical Art tại Lá Nhà Garden" width="1280" height="720" fetchpriority="high">
-          <figcaption><div><span class="ticket-category">Một trải nghiệm cùng Eventy</span><strong>Chậm lại một chút. <br>Sáng tạo một chút.</strong><span class="ticket-venue">Workshop Botanical Art · Lá Nhà Garden</span></div><svg class="ticket-mark" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h18v5a2 2 0 0 0 0 4v5H3v-5a2 2 0 0 0 0-4V5Z"/><path d="M15 5v14" stroke-dasharray="2 2"/></svg></figcaption>
-        </figure>
+        <div data-event-carousel role="group" aria-label="Sự kiện giới thiệu">
+          <figure class="event-ticket">
+            <div class="event-ticket-art">
+              <img data-event-cover alt="" width="1280" height="720" decoding="async" hidden>
+              <button class="event-carousel-arrow" type="button" data-carousel-prev aria-label="Sự kiện trước" hidden>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m16 5-2-2-9 9 9 9 2-2-7-7z"/></svg>
+              </button>
+              <button class="event-carousel-arrow" type="button" data-carousel-next aria-label="Sự kiện tiếp theo" hidden>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 5 2-2 9 9-9 9-2-2 7-7z"/></svg>
+              </button>
+            </div>
+            <figcaption aria-live="off">
+              <div class="ticket-copy">
+                <span class="ticket-category" data-event-category>Một trải nghiệm cùng Eventy</span>
+                <strong data-event-title>Lịch sự kiện Eventy</strong>
+                <span class="ticket-venue" data-event-venue></span>
+              </div>
+              <svg class="ticket-mark" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h18v5a2 2 0 0 0 0 4v5H3v-5a2 2 0 0 0 0-4V5Z"/><path d="M15 5v14" stroke-dasharray="2 2"/></svg>
+            </figcaption>
+          </figure>
+        </div>
       </aside>
     </main>
     <footer class="auth-footer"><span>Eventy · Khám phá. Đặt vé. Trải nghiệm.</span><span>Những cuộc hẹn đáng mong chờ.</span></footer>

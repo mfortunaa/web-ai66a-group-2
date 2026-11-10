@@ -80,3 +80,10 @@ class EventPublic(BaseModel):
 class EventListResponse(BaseModel):
     items: list[EventPublic]
     total: int
+
+
+class EventHighlight(BaseModel):
+    title: str
+    venue: str
+    image_url: str
+    is_past: bool

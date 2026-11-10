@@ -1,6 +1,6 @@
 # Proposed API
 
-Authentication and event endpoints are implemented; booking endpoints are implemented. See [setup and authentication examples](SETUP.md). Prefix application routes with `/api`. Require a bearer JWT on event and booking routes.
+Authentication, event and booking endpoints are implemented. See [setup and authentication examples](SETUP.md). Prefix application routes with `/api`. The event catalog, event details and booking endpoints require a bearer JWT.
 
 | Method | Endpoint | Purpose | Success |
 | --- | --- | --- | --- |
@@ -8,6 +8,7 @@ Authentication and event endpoints are implemented; booking endpoints are implem
 | POST | `/api/auth/token` | Sign in using OAuth2 username/password form data | 200 |
 | GET | `/api/auth/me` | Return the authenticated user's public profile | 200 |
 | GET | `/api/events` | List events with optional `sale_status`, `date_from`, `date_to` filters | 200 |
+| GET | `/api/events/highlights` | Return public previews for the login and registration pages | 200 |
 | GET | `/api/events/{event_id}` | Return event details and current availability | 200 |
 | POST | `/api/bookings` | Create a pending booking with event session ID, quantity, and attendee details | 201 |
 | GET | `/api/bookings` | List the current user's bookings with bounded pagination | 200 |

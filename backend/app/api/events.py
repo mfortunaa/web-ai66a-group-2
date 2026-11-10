@@ -9,12 +9,13 @@ from app.core.security import get_current_user
 from app.db.session import begin_read, get_session
 from app.models.event import Event, EventCover, EventSession
 from app.models.user import User
-from app.schemas.event import EventListResponse, EventPublic, SaleStatusFilter
+from app.schemas.event import EventHighlight, EventListResponse, EventPublic, SaleStatusFilter
 from app.services.events import HO_CHI_MINH, events_to_public, utc_database_value
 
 router = APIRouter(prefix="/api/events", tags=["Events"])
 SessionDep = Annotated[Session, Depends(get_session)]
 CurrentUser = Annotated[User, Depends(get_current_user)]
+HIGHLIGHT_LIMIT = 8
 
 
 @router.get("", response_model=EventListResponse)
@@ -77,6 +78,26 @@ def list_events(
             if event.sale_status.value == "coming_soon"
         ]
     return EventListResponse(items=public_events, total=len(public_events))
+
+
+@router.get("/highlights", response_model=list[EventHighlight])
+def list_event_highlights(session: SessionDep):
+    begin_read(session)
+    now = utc_database_value(datetime.now(timezone.utc))
+    previews = select(Event.title, Event.venue, Event.image_url)
+    current = session.exec(
+        previews.where(Event.ends_at > now).order_by(Event.starts_at, Event.id).limit(HIGHLIGHT_LIMIT)
+    ).all()
+    past = session.exec(
+        previews.where(Event.ends_at <= now)
+        .order_by(Event.ends_at.desc(), Event.id.desc())
+        .limit(HIGHLIGHT_LIMIT - len(current))
+    ).all()
+    return [
+        EventHighlight(title=title, venue=venue, image_url=image_url, is_past=is_past)
+        for rows, is_past in ((current, False), (past, True))
+        for title, venue, image_url in rows
+    ]
 
 
 @router.get("/{event_id}", response_model=EventPublic)
