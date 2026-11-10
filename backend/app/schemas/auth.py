@@ -1,3 +1,5 @@
+from typing import Literal
+
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 
 
@@ -33,6 +35,10 @@ class UserPublic(BaseModel):
 
 class RegistrationResponse(UserPublic):
     verification_delivery: str
+
+
+class UserProfile(UserPublic):
+    role: Literal["user", "admin"]
 
 
 class EmailRequest(BaseModel):

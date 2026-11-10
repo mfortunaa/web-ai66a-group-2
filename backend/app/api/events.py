@@ -1,16 +1,16 @@
 from datetime import date, datetime, time, timedelta, timezone
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from sqlalchemy import and_
 from sqlmodel import Session, select
 
 from app.core.security import get_current_user
-from app.db.session import get_session
-from app.models.event import Event, EventSession
+from app.db.session import begin_read, get_session
+from app.models.event import Event, EventCover, EventSession
 from app.models.user import User
 from app.schemas.event import EventListResponse, EventPublic, SaleStatusFilter
-from app.services.events import HO_CHI_MINH, event_to_public, utc_database_value
+from app.services.events import HO_CHI_MINH, events_to_public, utc_database_value
 
 router = APIRouter(prefix="/api/events", tags=["Events"])
 SessionDep = Annotated[Session, Depends(get_session)]
@@ -28,6 +28,7 @@ def list_events(
     if date_from is not None and date_to is not None and date_from > date_to:
         raise HTTPException(status_code=422, detail="date_from must be on or before date_to")
 
+    begin_read(session)
     statement = select(Event)
     local_start = None
     local_end_exclusive = None
@@ -64,20 +65,7 @@ def list_events(
 
     statement = statement.order_by(Event.starts_at, Event.id)
     events = session.exec(statement).all()
-    event_ids = [event.id for event in events]
-    sessions_by_event: dict[int, list[EventSession]] = {event_id: [] for event_id in event_ids}
-    if event_ids:
-        sessions = session.exec(
-            select(EventSession)
-            .where(EventSession.event_id.in_(event_ids))
-            .order_by(EventSession.starts_at, EventSession.id)
-        ).all()
-        for event_session in sessions:
-            sessions_by_event[event_session.event_id].append(event_session)
-    public_events = [
-        event_to_public(event, now, sessions_by_event[event.id])
-        for event in events
-    ]
+    public_events = events_to_public(session, events, now)
     if sale_status == SaleStatusFilter.ON_SALE:
         public_events = [
             event for event in public_events if event.sale_status.value == "on_sale"
@@ -97,12 +85,20 @@ def get_event(
     session: SessionDep,
     _current_user: CurrentUser,
 ):
+    begin_read(session)
     event = session.get(Event, event_id)
     if event is None:
         raise HTTPException(status_code=404, detail="Event not found")
-    sessions = session.exec(
-        select(EventSession)
-        .where(EventSession.event_id == event_id)
-        .order_by(EventSession.starts_at, EventSession.id)
-    ).all()
-    return event_to_public(event, sessions=sessions)
+    return events_to_public(session, [event])[0]
+
+
+@router.get("/{event_id}/cover")
+def get_event_cover(event_id: int, session: SessionDep):
+    cover = session.get(EventCover, event_id)
+    if cover is None:
+        raise HTTPException(404, detail="Event cover not found")
+    return Response(
+        content=cover.content,
+        media_type=cover.content_type,
+        headers={"X-Content-Type-Options": "nosniff", "Cache-Control": "no-cache"},
+    )

@@ -201,10 +201,21 @@ def test_migration_existing_accounts_is_repeatable(tmp_path):
     cwd = Path(__file__).resolve().parents[1]
     for _ in range(2): subprocess.run(command, env=env, cwd=cwd, check=True, capture_output=True)
     with db.connect() as c:
-        assert c.execute(text("SELECT is_email_verified, token_version FROM users")).all() == [(0, 0), (0, 0)]
+        assert c.execute(text("SELECT is_email_verified, token_version, role FROM users")).all() == [
+            (0, 0, "user"), (0, 0, "user")
+        ]
     subprocess.run([*command, "--verify-email", "A@example.com"], env=env, cwd=cwd, check=True, capture_output=True)
     with db.connect() as c:
         assert c.execute(text("SELECT is_email_verified FROM users ORDER BY id")).all() == [(1,), (0,)]
+    grant = [sys.executable, "-m", "scripts.grant_admin"]
+    refused = subprocess.run([*grant, "b@example.com"], env=env, cwd=cwd, capture_output=True)
+    assert refused.returncode != 0
+    for _ in range(2):
+        subprocess.run([*grant, "A@example.com"], env=env, cwd=cwd, check=True, capture_output=True)
+    with db.connect() as c:
+        assert c.execute(text("SELECT role, token_version FROM users ORDER BY id")).all() == [
+            ("admin", 1), ("user", 0)
+        ]
     db.dispose()
 
 

@@ -12,7 +12,7 @@ from app.core.security import create_access_token, get_current_user, hash_passwo
 from app.db.session import get_session
 from app.models.auth_challenge import AuthChallenge
 from app.models.user import User
-from app.schemas.auth import EmailRequest, RegisterRequest, RegistrationResponse, ResetRequest, TokenResponse, UserPublic, VerifyRequest
+from app.schemas.auth import EmailRequest, RegisterRequest, RegistrationResponse, ResetRequest, TokenResponse, UserProfile, UserPublic, VerifyRequest
 from app.services import auth as service
 
 router = APIRouter(prefix="/api/auth", tags=["Authentication"])
@@ -146,6 +146,6 @@ def reset(data: ResetRequest, request: Request, session: SessionDep):
     return {"message": "Password updated. Please log in."}
 
 
-@router.get("/me", response_model=UserPublic)
+@router.get("/me", response_model=UserProfile)
 def me(user: Annotated[User, Depends(get_current_user)]):
     return user

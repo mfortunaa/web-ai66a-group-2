@@ -26,6 +26,8 @@ A simple web application for discovering events and booking tickets. Users can s
 
 For a Docker demo with persistent SQLite and a local OTP/reset email inbox, follow [Docker Compose setup](docs/SETUP.md#docker-compose-developmentdemo-12). It serves the application at `http://localhost:8080` and Mailpit at `http://localhost:8025`.
 
+On a new machine, start with [getting the project](docs/SETUP.md#1-get-the-project-on-a-new-machine), then configure Docker and choose sample data or [import an existing SQLite database](docs/SETUP.md#import-an-existing-sqlite-database). The guide also covers exporting a backup from the source machine.
+
 Eventy provides a straightforward event discovery and registration experience. The initial version focuses on the main booking journey:
 
 **Login → Event Catalog → Event Details → Booking Form → Simulated Payment → Confirmation**
@@ -63,7 +65,7 @@ Implemented pages use physical HTML files and query parameters: `frontend/pages/
 - Input validation, server-side price calculation, and availability checks.
 - Simulated payment and booking confirmation.
 
-Events will initially be populated using seed data. Email verification, password recovery, and persistent auth limits extend the initial scope in #6. Real payment integration, seat selection, and an admin dashboard remain outside the scope. No real payment credentials will be collected.
+Events can be populated with seed data and maintained through the admin event manager. See [admin setup](docs/SETUP.md#admin-event-management) for granting access and signing in. Email verification, password recovery, and persistent auth limits extend the initial scope in #6. Real payment integration and seat selection remain outside the scope. No real payment credentials will be collected.
 
 ---
 

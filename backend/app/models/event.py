@@ -51,3 +51,22 @@ class EventSession(SQLModel, table=True):
     ends_at: datetime = Field(sa_type=DateTime(timezone=True))
     capacity: int = Field(gt=0)
     tickets_sold: int = Field(default=0, ge=0)
+
+
+class EventIdCounter(SQLModel, table=True):
+    __tablename__ = "event_id_counter"
+
+    id: int = Field(primary_key=True)
+    last_id: int
+
+    def next_id(self) -> int:
+        self.last_id += 1
+        return self.last_id
+
+
+class EventCover(SQLModel, table=True):
+    __tablename__ = "event_covers"
+
+    event_id: int = Field(foreign_key="events.id", primary_key=True)
+    content_type: str
+    content: bytes
