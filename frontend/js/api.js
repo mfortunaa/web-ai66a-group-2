@@ -30,7 +30,7 @@ function getErrorDetails(data) {
 }
 
 export async function apiRequest(path, options = {}) {
-  const { body, headers: requestHeaders, ...requestOptions } = options;
+  const { body, headers: requestHeaders, loginRedirect = loginUrl, ...requestOptions } = options;
   const headers = new Headers(requestHeaders);
   const token = getToken();
   if (token && !headers.has('Authorization')) {
@@ -74,7 +74,7 @@ export async function apiRequest(path, options = {}) {
       || 'Đã xảy ra lỗi. Vui lòng thử lại.', { status: response.status, code });
     if (response.status === 401) {
       clearToken();
-      window.location.replace(loginUrl);
+      window.location.replace(loginRedirect);
     }
     throw error;
   }

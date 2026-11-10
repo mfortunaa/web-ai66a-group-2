@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Quản lý sự kiện | Eventy</title>
+  <link rel="stylesheet" href="../css/common.css">
+  <link rel="stylesheet" href="../css/admin.css">
+  <script type="module" src="../js/admin-events.js"></script>
+</head>
+<body>
+  <div class="site-shell">
+    <header class="admin-header">
+      <a class="brand" href="admin-events.html"><svg class="brand-mark" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h18v5a2 2 0 0 0 0 4v5H3v-5a2 2 0 0 0 0-4V5Z"/><path d="M15 5v14" stroke-dasharray="2 2"/></svg>eventy</a>
+      <div class="admin-account" id="admin-account" hidden>
+        <span id="account-name"></span>
+        <button type="button" id="logout" class="secondary">Đăng xuất</button>
+      </div>
+    </header>
+    <main class="admin-main">
+      <div class="admin-title">
+        <div>
+          <h1>Quản lý sự kiện</h1>
+          <p>Danh mục, lịch diễn và sức chứa vé.</p>
+        </div>
+        <button type="button" id="add-event" class="primary" hidden>Thêm sự kiện</button>
+      </div>
+      <p id="page-status" class="admin-status" role="status">Đang kiểm tra phiên đăng nhập…</p>
+      <button type="button" id="reload-events" class="secondary" hidden>Thử lại</button>
+      <noscript><p>Vui lòng bật JavaScript để quản lý sự kiện.</p></noscript>
+      <section id="event-list" aria-labelledby="list-heading" hidden>
+        <div class="admin-list-heading">
+          <h2 id="list-heading">Danh sách sự kiện</h2>
+          <span id="event-count"></span>
+        </div>
+        <p id="inventory-sync" class="inventory-sync" role="status">Số vé tự cập nhật mỗi 10 giây.</p>
+        <ul id="event-rows" class="event-rows"></ul>
+        <p id="empty-events" class="admin-empty" hidden>Chưa có sự kiện. Chọn “Thêm sự kiện” để lập lịch và mở bán vé.</p>
+      </section>
+    </main>
+  </div>
+
+  <dialog id="event-editor" class="admin-dialog editor-dialog" aria-labelledby="editor-title">
+    <form id="event-form" method="dialog">
+      <header class="dialog-heading">
+        <h2 id="editor-title">Thêm sự kiện</h2>
+        <p>Các mốc thời gian theo giờ Việt Nam (UTC+7).</p>
+      </header>
+      <div class="editor-body">
+      <div class="admin-fields">
+        <label>Tên sự kiện<input name="title" maxlength="200" required autofocus></label>
+        <label>Mã sự kiện (slug)<input name="slug" maxlength="100" pattern="[a-z0-9]+(-[a-z0-9]+)*" required aria-describedby="slug-hint"><small id="slug-hint">Chữ thường không dấu, số và dấu gạch ngang.</small></label>
+        <label class="wide">Mô tả<textarea name="description" rows="3" maxlength="10000" required></textarea></label>
+        <fieldset class="wide admin-cover">
+          <legend>Ảnh bìa</legend>
+          <div class="cover-fields">
+            <img id="cover-preview" class="cover-preview" alt="Xem trước ảnh bìa" hidden>
+            <div class="cover-inputs">
+              <label>Tải ảnh lên<input id="cover-file" name="cover" type="file" accept="image/jpeg,image/png,image/webp" aria-describedby="cover-hint">
+                <small id="cover-hint">JPG, PNG hoặc WebP tĩnh, tối đa 5 MB.</small>
+              </label>
+              <button id="clear-cover-file" class="secondary" type="button" hidden>Bỏ ảnh đã chọn</button>
+              <p id="cover-status" class="admin-status error" role="status"></p>
+              <label>Hoặc dùng đường dẫn ảnh<input name="image_url" maxlength="500" required placeholder="/assets/images/events/…"></label>
+            </div>
+          </div>
+        </fieldset>
+        <label>Địa điểm<input name="venue" maxlength="200" required></label>
+        <label>Địa chỉ<input name="address" maxlength="300" required></label>
+        <label>Bắt đầu sự kiện<input name="starts_at" type="datetime-local" step="1" required></label>
+        <label>Kết thúc sự kiện<input name="ends_at" type="datetime-local" step="1" required></label>
+        <label>Mở bán<input name="sales_open_at" type="datetime-local" step="1" required></label>
+        <label>Đóng bán<input name="sales_close_at" type="datetime-local" step="1" required></label>
+        <label>Giá vé (₫)<input name="ticket_price_vnd" type="number" min="0" max="9007199254740991" required></label>
+        <label>Sức chứa sự kiện<input name="capacity" type="number" min="1" max="9007199254740991" required></label>
+      </div>
+      <section class="editor-sessions" aria-labelledby="sessions-title">
+        <div class="admin-title">
+          <h3 id="sessions-title">Suất diễn</h3>
+          <button type="button" id="add-session" class="secondary">Thêm suất</button>
+        </div>
+        <p class="session-hint">Khách chọn suất diễn khi đặt vé. Suất đã có đơn cần giữ nguyên giờ bắt đầu và kết thúc.</p>
+        <div id="session-fields"></div>
+      </section>
+      <p id="editor-status" class="admin-status error" role="alert"></p>
+      </div>
+      <footer class="dialog-actions">
+        <button type="button" class="secondary" data-close>Hủy</button>
+        <button type="submit" class="primary">Lưu sự kiện</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <template id="session-template">
+    <fieldset class="admin-session">
+      <legend>Suất diễn</legend>
+      <div class="admin-fields">
+        <label>Bắt đầu<input name="session_start" type="datetime-local" step="1" required></label>
+        <label>Kết thúc<input name="session_end" type="datetime-local" step="1" required></label>
+        <label>Sức chứa<input name="session_capacity" type="number" min="1" max="9007199254740991" required></label>
+        <button type="button" class="secondary remove-session">Bỏ suất</button>
+      </div>
+    </fieldset>
+  </template>
+
+  <dialog id="delete-dialog" class="admin-dialog" aria-labelledby="delete-title">
+    <form id="delete-form" method="dialog">
+      <h2 id="delete-title">Xóa sự kiện?</h2>
+      <p id="delete-event-name"></p>
+      <p>Sự kiện và các suất diễn sẽ bị xóa khỏi danh mục. Sự kiện đã có đơn đặt vé được giữ lại.</p>
+      <p id="delete-status" class="admin-status error" role="alert"></p>
+      <footer class="dialog-actions">
+        <button type="button" class="secondary" data-close autofocus>Giữ sự kiện</button>
+        <button type="submit" class="danger">Xóa sự kiện</button>
+      </footer>
+    </form>
+  </dialog>
+</body>
+</html>

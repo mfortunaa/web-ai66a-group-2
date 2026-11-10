@@ -61,3 +61,9 @@ def get_current_user(
     if user is None or not user.is_email_verified or payload["ver"] != user.token_version:
         raise unauthorized
     return user
+
+
+def require_admin(user: Annotated[User, Depends(get_current_user)]) -> User:
+    if user.role != "admin":
+        raise HTTPException(status.HTTP_403_FORBIDDEN, detail="Admin access required")
+    return user

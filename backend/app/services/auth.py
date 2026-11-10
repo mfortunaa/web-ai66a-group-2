@@ -6,10 +6,11 @@ import secrets
 import time
 
 from fastapi import HTTPException
-from sqlalchemy import delete, text
+from sqlalchemy import delete
 from sqlmodel import Session
 
 from app.core.config import get_settings
+from app.db.session import begin_write
 from app.models.auth_challenge import AuthChallenge, AuthLimit
 from app.services import mail
 
@@ -24,7 +25,7 @@ def digest(value: str) -> str:
 
 def begin(session: Session) -> None:
     # Acquire the write lock BEFORE reading counters/challenges; works across processes.
-    session.execute(text("BEGIN IMMEDIATE"))
+    begin_write(session)
     session.exec(delete(AuthLimit).where(AuthLimit.window_end <= now(), AuthLimit.blocked_until <= now()))
     session.exec(delete(AuthChallenge).where(AuthChallenge.expires_at <= now()))
 

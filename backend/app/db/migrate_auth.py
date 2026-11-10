@@ -17,7 +17,11 @@ def migrate():
     with engine.begin() as connection:
         if "users" in inspect(connection).get_table_names():
             columns = {c["name"] for c in inspect(connection).get_columns("users")}
-            for name, definition in (("is_email_verified", "BOOLEAN NOT NULL DEFAULT 0"), ("token_version", "INTEGER NOT NULL DEFAULT 0")):
+            for name, definition in (
+                ("is_email_verified", "BOOLEAN NOT NULL DEFAULT 0"),
+                ("token_version", "INTEGER NOT NULL DEFAULT 0"),
+                ("role", "VARCHAR(5) NOT NULL DEFAULT 'user' CHECK (role IN ('user', 'admin'))"),
+            ):
                 if name not in columns:
                     connection.execute(text(f"ALTER TABLE users ADD COLUMN {name} {definition}"))
     create_db_and_tables()

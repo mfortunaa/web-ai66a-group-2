@@ -5,8 +5,10 @@ from zoneinfo import ZoneInfo
 from sqlalchemy import MetaData, Table, func, inspect, select as sqlalchemy_select
 from sqlmodel import Session, select
 
-from app.db.session import create_db_and_tables, engine
+from app.db.session import begin_write, create_db_and_tables, engine
 from app.models.event import Event, EventSession
+from app.services.event_covers import is_uploaded_cover, remove_cover
+from app.services.events import event_id_counter
 
 LEGACY_SAMPLE_SLUGS = (
     "concert-under-the-stars",
@@ -355,6 +357,9 @@ def seed_events(
     replace_old_samples: bool = False,
     demo_date: date | None = None,
 ) -> int:
+    begin_write(session)
+    event_ids = event_id_counter(session, Event)
+    session_ids = event_id_counter(session, EventSession)
     changed = 0
     if replace_old_samples:
         _ensure_unreferenced_events(session, LEGACY_SAMPLE_SLUGS)
@@ -362,6 +367,8 @@ def seed_events(
             select(Event).where(Event.slug.in_(LEGACY_SAMPLE_SLUGS))
         ).all()
         for event in old_events:
+            if is_uploaded_cover(event.image_url):
+                remove_cover(session, event.id)
             session.delete(event)
             changed += 1
 
@@ -371,6 +378,7 @@ def seed_events(
         ).first()
         if existing is None:
             existing = sample
+            existing.id = event_ids.next_id()
             session.add(existing)
             session.flush()
             changed += 1
@@ -379,6 +387,8 @@ def seed_events(
             existing_sessions = _ensure_seed_update_safe(
                 session, existing, sample, sample_sessions
             )
+            if is_uploaded_cover(existing.image_url):
+                remove_cover(session, existing.id)
             for field in (
                 "title",
                 "description",
@@ -409,6 +419,7 @@ def seed_events(
                 _normalized_datetime(sample_session.starts_at)
             )
             if existing_session is None:
+                sample_session.id = session_ids.next_id()
                 sample_session.event_id = existing.id
                 session.add(sample_session)
                 changed += 1

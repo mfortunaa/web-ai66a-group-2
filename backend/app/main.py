@@ -9,6 +9,7 @@ from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
+from app.api.admin_events import router as admin_events_router
 from app.api.auth import router as auth_router
 from app.api.bookings import router as bookings_router
 from app.api.events import router as events_router
@@ -47,6 +48,7 @@ app.add_middleware(
     expose_headers=["Retry-After"],
 )
 app.include_router(auth_router)
+app.include_router(admin_events_router)
 app.include_router(events_router)
 app.include_router(my_bookings_router)
 app.include_router(bookings_router)

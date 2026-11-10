@@ -1,9 +1,10 @@
-import { eventsUrl, getCurrentUser, getToken, login, register } from './auth.js';
+import { adminEventsUrl, eventsUrl, getCurrentUser, getToken, login, register, verifyEmailUrl } from './auth.js';
 
 const form = document.querySelector('form');
 const message = document.querySelector('#form-message');
 const button = form.querySelector('button[type="submit"]');
 const originalLabel = button.textContent;
+const adminOnly = form.id === 'admin-login-form';
 
 document.querySelectorAll('.password-toggle').forEach((toggle) => {
   toggle.addEventListener('click', () => {
@@ -34,7 +35,11 @@ form.addEventListener('input', (event) => {
 });
 
 if (getToken()) {
-  getCurrentUser().then(() => window.location.replace(eventsUrl)).catch(() => {});
+  getCurrentUser().then((user) => {
+    if (!adminOnly || user.role === 'admin') {
+      window.location.replace(adminOnly ? adminEventsUrl : eventsUrl);
+    }
+  }).catch(() => {});
 }
 
 form.addEventListener('submit', async (event) => {
@@ -61,13 +66,13 @@ form.addEventListener('submit', async (event) => {
       sessionStorage.setItem('eventy_verification_email', data.get('email').trim());
       window.location.replace(new URL(`verify-email.html?delivery=${result.verification_delivery}`, window.location.href));
     } else {
-      await login(data.get('email'), password);
-      window.location.replace(eventsUrl);
+      await login(data.get('email'), password, { adminOnly });
+      window.location.replace(adminOnly ? adminEventsUrl : eventsUrl);
     }
   } catch (error) {
     if (error.code === 'email_not_verified') {
       sessionStorage.setItem('eventy_verification_email', data.get('email').trim());
-      window.location.assign(new URL('pages/verify-email.html', window.location.href));
+      window.location.assign(verifyEmailUrl);
       return;
     }
     if (error.status === 409) showFieldError('email', error.message);

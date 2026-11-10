@@ -65,7 +65,7 @@ Implemented pages use physical HTML files and query parameters: `frontend/pages/
 - Input validation, server-side price calculation, and availability checks.
 - Simulated payment and booking confirmation.
 
-Events will initially be populated using seed data. Email verification, password recovery, and persistent auth limits extend the initial scope in #6. Real payment integration, seat selection, and an admin dashboard remain outside the scope. No real payment credentials will be collected.
+Events can be populated with seed data and maintained through the admin event manager. See [admin setup](docs/SETUP.md#admin-event-management) for granting access and signing in. Email verification, password recovery, and persistent auth limits extend the initial scope in #6. Real payment integration and seat selection remain outside the scope. No real payment credentials will be collected.
 
 ---
 

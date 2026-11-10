@@ -4,11 +4,14 @@ const TOKEN_KEY = 'eventy_access_token';
 const frontendRoot = new URL('../', import.meta.url);
 export const loginUrl = new URL('index.html', frontendRoot).href;
 export const eventsUrl = new URL('pages/events.html', frontendRoot).href;
+export const adminLoginUrl = new URL('pages/admin-login.html', frontendRoot).href;
+export const adminEventsUrl = new URL('pages/admin-events.html', frontendRoot).href;
+export const verifyEmailUrl = new URL('pages/verify-email.html', frontendRoot).href;
 
 // The short-lived token belongs to this tab. Never store passwords or refresh tokens.
 export function getToken() { return sessionStorage.getItem(TOKEN_KEY); }
 export function clearToken() { sessionStorage.removeItem(TOKEN_KEY); }
-export function logout() { clearToken(); window.location.replace(loginUrl); }
+export function logout({ redirect = loginUrl } = {}) { clearToken(); window.location.replace(redirect); }
 
 export async function authRequest(path, options = {}) {
   let response;
@@ -50,19 +53,26 @@ export function register(fullName, email, password) {
   });
 }
 
-export async function login(email, password) {
+export async function login(email, password, { adminOnly = false } = {}) {
   const result = await authRequest('/api/auth/token', {
     method: 'POST', body: new URLSearchParams({ username: email.trim(), password }),
   });
+  if (adminOnly && (await fetchProfile(result.access_token)).role !== 'admin') {
+    throw new Error('Tài khoản này chưa được cấp quyền quản trị.');
+  }
   sessionStorage.setItem(TOKEN_KEY, result.access_token);
   return result;
+}
+
+function fetchProfile(token) {
+  return authRequest('/api/auth/me', { headers: { Authorization: `Bearer ${token}` } });
 }
 
 export async function getCurrentUser() {
   const token = getToken();
   if (!token) { const error = new Error('Vui lòng đăng nhập.'); error.status = 401; throw error; }
   try {
-    return await authRequest('/api/auth/me', { headers: { Authorization: `Bearer ${token}` } });
+    return await fetchProfile(token);
   } catch (error) {
     if (error.status === 401) clearToken();
     throw error;

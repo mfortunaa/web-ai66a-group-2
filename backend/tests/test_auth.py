@@ -26,7 +26,7 @@ def test_registration_login_and_profile(client, db_engine, verify_account):
     assert token.json()["expires_in"] > 0
     me = client.get("/api/auth/me", headers={"Authorization": f"Bearer {token.json()['access_token']}"})
     assert me.status_code == 200
-    assert me.json() == {"id": 1, "full_name": "Nguyen An", "email": "an@example.com", "is_email_verified": True}
+    assert me.json() == {"id": 1, "full_name": "Nguyen An", "email": "an@example.com", "is_email_verified": True, "role": "user"}
 
 
 def test_duplicate_email_case_insensitive(client):

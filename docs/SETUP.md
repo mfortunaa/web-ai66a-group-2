@@ -199,7 +199,7 @@ Tests use isolated in-memory and temporary file SQLite databases and a test-only
 | --- | --- | --- |
 | `POST /api/auth/register` | JSON: `full_name`, `email`, `password` | 201: `id`, `full_name`, `email`, `is_email_verified`, `verification_delivery` |
 | `POST /api/auth/token` | Form data: `username` (email), `password` | 200: `access_token`, `token_type: bearer`, `expires_in` (seconds) |
-| `GET /api/auth/me` | `Authorization: Bearer <access_token>` | 200: `id`, `full_name`, `email`, `is_email_verified` |
+| `GET /api/auth/me` | `Authorization: Bearer <access_token>` | 200: `id`, `full_name`, `email`, `is_email_verified`, `role` |
 
 Use `from app.db.session import get_session` for the session dependency and `from app.core.security import get_current_user` for authenticated routes. The user table class is `app.models.user.User`. Add new routers to `app/main.py` and import new tables inside `create_db_and_tables()` in `app/db/session.py`.
 
@@ -231,7 +231,24 @@ Before using an existing database, stop the app and back up the SQLite file, the
 ..\.venv\Scripts\python -m app.db.migrate_auth
 ```
 
-The migration is repeatable, adds `is_email_verified=false` and `token_version=0`, and creates challenge/limit tables. Existing accounts stay unverified: use the verification page's resend action. To explicitly verify ONE existing development account, run `python -m app.db.migrate_auth --verify-email an@example.com` with the virtualenv Python. This is a development-only action; the normal signup/demo flow always uses emailed OTPs. JWTs issued before migration lack the required version and must log in again. `create_all` alone does not upgrade existing columns.
+The migration is repeatable. It adds any missing auth columns with defaults `is_email_verified=false`, `token_version=0`, and `role=user`. It also creates challenge/limit tables. Use the verification page's resend action for accounts that still need verification. To explicitly verify ONE existing development account, run `python -m app.db.migrate_auth --verify-email an@example.com` with the virtualenv Python. This is a development-only action; the normal signup/demo flow always uses emailed OTPs. JWTs issued before migration lack the required version and must log in again. `create_all` alone does not upgrade existing columns.
+
+## Admin event management
+
+Register a dedicated account and verify it using the emailed code. Run the following commands from `backend/` against the same database used by the web server. Replace the example email with the verified account's email.
+
+```powershell
+..\.venv\Scripts\python -m app.db.migrate_auth
+..\.venv\Scripts\python -m scripts.grant_admin admin@example.com
+```
+
+For Docker Compose, the container runs the migration on startup. From the repository root, grant access with `docker compose exec backend python -m scripts.grant_admin admin@example.com`.
+
+Open `/pages/admin-login.html` on the frontend and sign in again. Granting admin access invalidates sessions issued before the grant. Use the management page to create an event with at least one session, edit its information and sessions, or delete it. The editor uses Vietnam time (UTC+7).
+
+Upload a static JPG, PNG, or WebP cover up to 5 MB and 20 megapixels, or enter an image URL. Uploaded covers are stored in the same SQLite database as their events. The multipart endpoints are `POST /api/admin/events/with-cover` and `PUT /api/admin/events/{id}/with-cover`, with the event JSON in the `event` field and the image file in the `cover` field.
+
+The API protects `GET /api/admin/events`, `POST /api/admin/events`, `PUT /api/admin/events/{id}`, and `DELETE /api/admin/events/{id}` with the current database role. Existing bookings block event deletion and block removing or rescheduling their sessions. Capacity cannot fall below the number of tickets already sold.
 
 Run Uvicorn with `--no-proxy-headers` so arbitrary forwarded headers cannot change the IP used by auth limits. Limits use the direct peer IP; deployments behind a proxy need a separate trusted-proxy design. Retain SQLite and the signing key across restarts.
 

@@ -17,10 +17,11 @@ from sqlalchemy import update
 from sqlalchemy.exc import IntegrityError
 from sqlmodel import Session, select
 
+from app.db.session import begin_write
 from app.models.booking import Booking, BookingStatus, utcnow
 from app.models.event import Event, EventSession
 from app.schemas.booking import BookingCreate
-from app.services.events import as_utc
+from app.services.events import as_utc, available_for_session
 
 OPEN_STATES = (BookingStatus.PENDING.value, BookingStatus.PAYMENT_FAILED.value)
 
@@ -55,18 +56,21 @@ def _replay(existing: Booking, fingerprint: str):
 def create_booking(session: Session, user_id: int, data: BookingCreate, request_key: str | None):
     """Returns (booking, created). Same key + payload returns the original booking (created=False)."""
     fingerprint = _fingerprint(data)
-    if request_key:
-        existing = _by_key(session, user_id, request_key)
-        if existing:
-            return _replay(existing, fingerprint)
-    event_session = session.get(EventSession, data.event_session_id)
-    event = session.get(Event, event_session.event_id) if event_session else None
-    if event_session is None or event is None:
-        raise BookingError(404, "Event session not found")
-    _check_bookable(event, event_session, utcnow())
-    if data.quantity > event_session.capacity - event_session.tickets_sold:
-        raise BookingError(409, "Not enough tickets left for this session")
     for _ in range(5):
+        # Serialize the existence check and insert with admin schedule changes.
+        begin_write(session)
+        if request_key:
+            existing = _by_key(session, user_id, request_key)
+            if existing:
+                session.commit()
+                return _replay(existing, fingerprint)
+        event_session = session.get(EventSession, data.event_session_id)
+        event = session.get(Event, event_session.event_id) if event_session else None
+        if event_session is None or event is None:
+            raise BookingError(404, "Event session not found")
+        _check_bookable(event, event_session, utcnow())
+        if data.quantity > available_for_session(event, event_session):
+            raise BookingError(409, "Not enough tickets left for this session")
         booking = Booking(
             reference="BK-" + secrets.token_hex(4).upper(), user_id=user_id, event_id=event.id,
             event_session_id=event_session.id, quantity=data.quantity,
@@ -82,11 +86,6 @@ def create_booking(session: Session, user_id: int, data: BookingCreate, request_
             return booking, True
         except IntegrityError:
             session.rollback()
-            if request_key:
-                existing = _by_key(session, user_id, request_key)
-                if existing:  # concurrent duplicate create
-                    return _replay(existing, fingerprint)
-            # otherwise: reference collision, retry with a new reference
     raise BookingError(500, "Could not create booking, please try again")
 
 
@@ -124,10 +123,7 @@ def payment_retry_status(
             return False, "sales_not_open"
         return False, "sales_closed"
 
-    if (
-        event_session.capacity - event_session.tickets_sold < booking.quantity
-        or event.capacity - event.tickets_sold < booking.quantity
-    ):
+    if booking.quantity > available_for_session(event, event_session):
         return False, "tickets_unavailable"
     return True, None
 
@@ -146,10 +142,15 @@ def cancel_booking(session: Session, user_id: int, booking_id: int) -> Booking:
 
 
 def simulate_payment(session: Session, user_id: int, booking_id: int, outcome: str) -> Booking:
+    # Read the sale window and stock under the same lock as admin updates.
+    if outcome == "success":
+        begin_write(session)
     booking = get_booking(session, user_id, booking_id)
     if booking.cancelled_at is not None:
         raise BookingError(409, "Cancelled bookings cannot be paid")
     if booking.status == BookingStatus.CONFIRMED.value:
+        if outcome == "success":
+            session.commit()
         return booking
     now = utcnow()
     if outcome == "failure":
