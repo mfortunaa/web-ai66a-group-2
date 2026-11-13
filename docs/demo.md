@@ -26,6 +26,7 @@ The demo uses seeded events, a local SQLite database, and simulated payment. It 
 
 1. From the catalog, open an event labeled **Đang mở bán** and choose **Mua vé**.
 2. Select an available performance, enter a positive ticket quantity and verify the estimated total.
+   The performance list and selected-performance summary show Vietnam-local 24-hour start and end times.
 3. Enter or confirm the attendee name, email, and phone. Continue to the simulated payment page.
 4. Choose **Mô phỏng thanh toán thành công**. Verify that the confirmation page shows a confirmed status, booking reference, event/session, quantity, attendee summary, and server-calculated total.
 5. Reload the confirmation page. The same confirmation should load from the authenticated booking API.
@@ -57,13 +58,17 @@ node --test frontend/tests/booking.test.cjs
 
 ## My Bookings checks
 
+- Open the compact account icon in the header and verify it groups **Vé của tôi**, **Cài đặt tài khoản**, and **Đăng xuất**. In account settings, change the name and verify it persists; the email field is read-only. Birthday and phone can be filled or cleared, and registration does not ask for them.
+- Switch language and theme while on checkout. The entered attendee values and selected performance remain unchanged; Light mode shows the moon (switch to dark) and Dark mode shows the sun (switch to light), with a reduced-motion-aware fade.
+
 - Choose **Hủy đặt vé** in My Bookings or booking details. The modal must show the booking reference and **Hủy đặt vé không được hoàn tiền**. **Giữ đặt vé** and Escape must close it without sending a cancellation. Only **Xác nhận hủy** submits the action.
 - Cancel a pending/failed/confirmed booking. The history and details show **Đã hủy**, no payment or cancellation action remains, refreshing keeps it cancelled, and a stale payment URL cannot resume it. Cancellation never refunds or releases consumed stock. Test both languages/themes and keyboard focus in the modal.
 
-- Use a new account: **Vé của tôi** must show an empty state with a catalog link.
+- In **Vé của tôi**, verify the status tabs (**Tất cả**, **Thành công**, **Đang xử lý**, **Đã hủy**) and time tabs (**Sắp diễn ra**, **Đã kết thúc**) filter the full booking history, including when there are more than 10 tickets. The empty state offers **Mua vé ngay**.
+- Verify the My Bookings page has no account sidebar or breadcrumb, and the shared footer links to **Hanoi Centre** on a map and opens `contact@eventy.com` in an email app.
 - Fail a simulated payment, open **Vé của tôi**, choose **Thử thanh toán lại**, and complete the original booking. Return to the list (including browser Back); it must refresh to **Đã xác nhận**, without consuming stock twice.
 - Open a pending booking after sales close or stock runs out: the list explains why payment is unavailable. Open a stale payment URL directly; it must reload the current eligibility and hide payment actions. The backend still rejects a stale success request.
-- Test more than 10 bookings with **Trang trước / Trang sau**. Verify newest-first ordering, totals, timezone and all statuses on desktop/tablet/phone, and use Tab/Enter for navigation.
+- Test more than 10 bookings with **Trang trước / Trang sau** under multiple filters. Verify matching totals, newest-first ordering, timezone and all statuses on desktop/tablet/phone, and use Tab/Enter for navigation.
 - Disconnect the API, then choose **Thử lại** after reconnecting. Reload the list URL directly; expired authentication returns to sign-in. Account B must never see account A's list or details.
 
 Automated frontend regression checks: `node --test frontend/tests/*.test.cjs`. The sign-in and registration pages share `css/auth-entry.css`; both preserve the existing email verification and recovery flows.

@@ -204,6 +204,9 @@ def test_migration_existing_accounts_is_repeatable(tmp_path):
         assert c.execute(text("SELECT is_email_verified, token_version, role FROM users")).all() == [
             (0, 0, "user"), (0, 0, "user")
         ]
+        assert c.execute(text("SELECT date_of_birth, phone_number FROM users")).all() == [
+            (None, None), (None, None)
+        ]
     subprocess.run([*command, "--verify-email", "A@example.com"], env=env, cwd=cwd, check=True, capture_output=True)
     with db.connect() as c:
         assert c.execute(text("SELECT is_email_verified FROM users ORDER BY id")).all() == [(1,), (0,)]

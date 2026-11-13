@@ -8,6 +8,7 @@ const source = fs.readFileSync(path.join(__dirname, '../js/my-bookings.js'), 'ut
 const reasons = fs.readFileSync(path.join(__dirname, '../js/booking-status.js'), 'utf8').replace(/^import .*;\r?\n/gm, '').replace('export function', 'function');
 function element(tag = 'div') {
   return { tag, children: [], hidden: false, disabled: false, textContent: '', attributes: {}, listeners: {},
+    dataset: {},
     append(...children) { this.children.push(...children); },
     replaceChildren(...children) { this.children = children; },
     setAttribute(key, value) { this.attributes[key] = value; },
@@ -16,10 +17,17 @@ function element(tag = 'div') {
 function setup(transport = async () => pageData([]), authenticate = async () => ({})) {
   const nodes = new Map(); const requests = []; const events = {};
   const get = selector => { if (!nodes.has(selector)) nodes.set(selector, element()); return nodes.get(selector); };
+  get('#status-tabs').children = ['all', 'confirmed', 'processing', 'cancelled'].map(value => {
+    const button = element('button'); button.dataset.bookingStatus = value; return button;
+  });
+  get('#period-tabs').children = ['upcoming', 'past'].map(value => {
+    const button = element('button'); button.dataset.bookingPeriod = value; return button;
+  });
   const context = vm.createContext({ createCancelButton: () => element('button'), t: (vi, en) => vi, getLanguage: () => 'vi', initializeSitePreferences() {}, localizeMessage: text => text, Intl, Date, Object, Number, encodeURIComponent,
     document: { querySelector: get, createElement: element },
     window: { addEventListener: (event, fn) => { events[event] = fn; } },
     requireAuth: authenticate, logout() {},
+    URLSearchParams,
     apiRequest: async url => { requests.push(url); return transport(url); },
   });
   vm.runInContext(reasons + '\n' + source, context);
@@ -69,19 +77,19 @@ test('unavailable bookings explain the reason without a payment link', async () 
   assert.ok(nodes.some(n => n.href === 'confirmation.html?booking_id=8'));
 });
 test('pagination requests bounded offsets and respects total', async () => {
-  const ui = setup(async url => url.endsWith('offset=10') ? pageData([booking({ id: 20 })], 11) : pageData(Array.from({ length: 10 }, (_, id) => booking({ id: id + 1 })), 11));
+  const ui = setup(async url => url.includes('offset=10') ? pageData([booking({ id: 20 })], 11) : pageData(Array.from({ length: 10 }, (_, id) => booking({ id: id + 1 })), 11));
   await ui.load(); assert.equal(ui.get('#next-page').disabled, false);
   await ui.get('#next-page').listeners.click();
-  assert.equal(ui.requests[1], '/api/bookings?limit=10&offset=10');
+  assert.equal(ui.requests[1], '/api/bookings?limit=10&offset=10&period=upcoming');
   assert.equal(ui.get('#next-page').disabled, true); assert.equal(ui.get('#previous-page').disabled, false);
-  await ui.get('#previous-page').listeners.click(); assert.equal(ui.requests[2], '/api/bookings?limit=10&offset=0');
+  await ui.get('#previous-page').listeners.click(); assert.equal(ui.requests[2], '/api/bookings?limit=10&offset=0&period=upcoming');
 });
 test('temporary failure retries the requested page and hides stale content', async () => {
   let fail = true;
   const ui = setup(async () => { if (fail) throw new Error('Disconnected'); return pageData([booking()], 11); });
   await ui.load(10); assert.equal(ui.get('#retry').hidden, false); assert.equal(ui.get('#bookings-content').hidden, true);
   fail = false; await ui.get('#retry').onclick();
-  assert.equal(ui.requests[1], '/api/bookings?limit=10&offset=10'); assert.equal(ui.get('#retry').hidden, true);
+  assert.equal(ui.requests[1], '/api/bookings?limit=10&offset=10&period=upcoming'); assert.equal(ui.get('#retry').hidden, true);
 });
 test('rejects invalid server data and avoids duplicate requests while loading', async () => {
   let release;
@@ -98,4 +106,14 @@ test('bfcache return refreshes booking state', async () => {
 test('expired authentication offers no retry and never requests the list', async () => {
   const ui = setup(undefined, async () => { throw Object.assign(new Error('Expired'), { status: 401 }); });
   await ui.load(); assert.equal(ui.get('#retry').hidden, true); assert.equal(ui.requests.length, 0);
+});
+test('status and time filters request matching server pages and reset pagination', async () => {
+  const ui = setup();
+  await ui.load(10);
+  await ui.get('#status-tabs').children[2].listeners.click();
+  assert.equal(ui.requests[1], '/api/bookings?limit=10&offset=0&period=upcoming&status=processing');
+  assert.equal(ui.get('#status-tabs').children[2].attributes['aria-pressed'], 'true');
+  await ui.get('#period-tabs').children[1].listeners.click();
+  assert.equal(ui.requests[2], '/api/bookings?limit=10&offset=0&period=past&status=processing');
+  assert.equal(ui.get('#period-tabs').children[1].attributes['aria-pressed'], 'true');
 });

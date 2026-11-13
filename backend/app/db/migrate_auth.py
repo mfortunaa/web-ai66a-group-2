@@ -21,6 +21,8 @@ def migrate():
                 ("is_email_verified", "BOOLEAN NOT NULL DEFAULT 0"),
                 ("token_version", "INTEGER NOT NULL DEFAULT 0"),
                 ("role", "VARCHAR(5) NOT NULL DEFAULT 'user' CHECK (role IN ('user', 'admin'))"),
+                ("date_of_birth", "DATE"),
+                ("phone_number", "VARCHAR(20)"),
             ):
                 if name not in columns:
                     connection.execute(text(f"ALTER TABLE users ADD COLUMN {name} {definition}"))

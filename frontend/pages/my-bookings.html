@@ -5,28 +5,56 @@
   <title data-i18n-vi="Vé của tôi | Eventy" data-i18n-en="My bookings | Eventy">Vé của tôi | Eventy</title>
   <meta name="description" content="Xem lại đặt vé và tiếp tục thanh toán trên Eventy.">
   <script src="../js/site-preferences-init.js?v=2"></script>
-  <link rel="stylesheet" href="../css/common.css">
-  <link rel="stylesheet" href="../css/my-bookings.css">
-  <script type="module" src="../js/my-bookings.js?v=2"></script>
+  <link rel="stylesheet" href="../css/common.css?v=3">
+  <link rel="stylesheet" href="../css/my-bookings.css?v=6">
+  <script type="module" src="../js/my-bookings.js?v=5"></script>
 </head>
 <body>
   <div class="site-shell">
     <header class="site-header">
       <a class="brand" href="events.html" aria-label="Eventy – Khám phá sự kiện"><svg class="brand-mark" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h18v5a2 2 0 0 0 0 4v5H3v-5a2 2 0 0 0 0-4V5Z"/><path d="M15 5v14" stroke-dasharray="2 2"/></svg><span>eventy</span></a>
-      <nav class="site-nav" aria-label="Điều hướng chính" data-i18n-aria-vi="Điều hướng chính" data-i18n-aria-en="Main navigation"><a class="nav-link" href="events.html" data-i18n-vi="Sự kiện" data-i18n-en="Events">Sự kiện</a><a class="nav-link" href="my-bookings.html" aria-current="page" data-i18n-vi="Vé của tôi" data-i18n-en="My bookings">Vé của tôi</a><button id="language-toggle" class="header-control" type="button">EN</button>
+      <nav class="site-nav" aria-label="Điều hướng chính" data-i18n-aria-vi="Điều hướng chính" data-i18n-aria-en="Main navigation"><button id="language-toggle" class="header-control" type="button">EN</button>
         <button id="theme-toggle" class="header-control" type="button" aria-pressed="false"><span data-theme-icon aria-hidden="true">◐</span><span data-theme-label>Giao diện tối</span></button>
-        <button id="logout" class="secondary" type="button" data-i18n-vi="Đăng xuất" data-i18n-en="Log out">Đăng xuất</button></nav>
+        <details class="account-menu">
+          <summary class="account-menu-trigger" aria-label="Mở menu tài khoản" data-i18n-aria-vi="Mở menu tài khoản" data-i18n-aria-en="Open account menu">
+            <svg class="account-avatar" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+            <svg class="account-chevron" viewBox="0 0 16 16" aria-hidden="true"><path d="m3 6 5 5 5-5"/></svg>
+          </summary>
+          <div class="account-menu-panel">
+            <a class="account-menu-item" href="my-bookings.html" aria-current="page" data-i18n-vi="Vé của tôi" data-i18n-en="My bookings">Vé của tôi</a>
+            <a class="account-menu-item" href="account-settings.html" data-i18n-vi="Cài đặt tài khoản" data-i18n-en="Account settings">Cài đặt tài khoản</a>
+            <button id="logout" class="account-menu-item account-menu-logout" type="button" data-i18n-vi="Đăng xuất" data-i18n-en="Log out">Đăng xuất</button>
+          </div>
+        </details></nav>
     </header>
     <main class="bookings-main">
-      <div class="bookings-heading"><div><h1 data-i18n-vi="Vé của tôi" data-i18n-en="My bookings">Vé của tôi</h1><p data-i18n-vi="Những cuộc hẹn của bạn, lưu lại ở đây." data-i18n-en="All your upcoming experiences, saved here.">Những cuộc hẹn của bạn, lưu lại ở đây.</p></div><a class="nav-link" href="events.html" data-i18n-vi="Khám phá sự kiện →" data-i18n-en="Discover events →">Khám phá sự kiện →</a></div>
-      <p id="page-message" class="page-message" role="status" aria-live="polite">Đang tải đặt vé…</p>
-      <button id="retry" class="button-secondary" type="button" hidden data-i18n-vi="Thử lại" data-i18n-en="Retry">Thử lại</button>
-      <section id="bookings-empty" class="bookings-empty" aria-labelledby="empty-title" hidden><h2 id="empty-title" data-i18n-vi="Cuộc hẹn đầu tiên đang chờ bạn." data-i18n-en="Your first experience is waiting.">Cuộc hẹn đầu tiên đang chờ bạn.</h2><p data-i18n-vi="Bạn chưa có đặt vé nào. Khám phá sự kiện và chọn một trải nghiệm bạn thích." data-i18n-en="You have no bookings yet. Discover events and choose an experience you like.">Bạn chưa có đặt vé nào. Khám phá sự kiện và chọn một trải nghiệm bạn thích.</p><a class="button-primary" href="events.html" data-i18n-vi="Tìm sự kiện" data-i18n-en="Find events">Tìm sự kiện</a></section>
-      <section id="bookings-content" aria-label="Danh sách đặt vé" hidden>
-        <p id="bookings-count" class="bookings-count"></p>
-        <ul id="bookings-list" class="bookings-list"></ul>
-        <nav id="pagination" class="bookings-pagination" aria-label="Phân trang đặt vé" hidden><button id="previous-page" class="button-secondary" type="button" data-i18n-vi="Trang trước" data-i18n-en="Previous page">Trang trước</button><p id="page-range" aria-live="polite"></p><button id="next-page" class="button-secondary" type="button" data-i18n-vi="Trang sau" data-i18n-en="Next page">Trang sau</button></nav>
-      </section>
+        <div class="bookings-heading">
+          <h1 data-i18n-vi="Vé của tôi" data-i18n-en="My bookings">Vé của tôi</h1>
+        </div>
+        <div class="booking-filters">
+          <div id="status-tabs" class="booking-status-tabs" role="group" aria-label="Lọc theo trạng thái" data-i18n-aria-vi="Lọc theo trạng thái" data-i18n-aria-en="Filter by status">
+            <button type="button" data-booking-status="all" aria-pressed="true" data-i18n-vi="Tất cả" data-i18n-en="All">Tất cả</button>
+            <button type="button" data-booking-status="confirmed" aria-pressed="false" data-i18n-vi="Thành công" data-i18n-en="Successful">Thành công</button>
+            <button type="button" data-booking-status="processing" aria-pressed="false" data-i18n-vi="Đang xử lý" data-i18n-en="Processing">Đang xử lý</button>
+            <button type="button" data-booking-status="cancelled" aria-pressed="false" data-i18n-vi="Đã hủy" data-i18n-en="Cancelled">Đã hủy</button>
+          </div>
+          <div id="period-tabs" class="booking-period-tabs" role="group" aria-label="Lọc theo thời gian" data-i18n-aria-vi="Lọc theo thời gian" data-i18n-aria-en="Filter by time">
+            <button type="button" data-booking-period="upcoming" aria-pressed="true" data-i18n-vi="Sắp diễn ra" data-i18n-en="Upcoming">Sắp diễn ra</button>
+            <button type="button" data-booking-period="past" aria-pressed="false" data-i18n-vi="Đã kết thúc" data-i18n-en="Past">Đã kết thúc</button>
+          </div>
+        </div>
+        <p id="page-message" class="page-message" role="status" aria-live="polite">Đang tải đặt vé…</p>
+        <button id="retry" class="button-secondary" type="button" hidden data-i18n-vi="Thử lại" data-i18n-en="Retry">Thử lại</button>
+        <section id="bookings-empty" class="bookings-empty" aria-labelledby="empty-title" hidden>
+          <h2 id="empty-title"></h2>
+          <p id="empty-description"></p>
+          <a class="button-primary" href="events.html" data-i18n-vi="Mua vé ngay" data-i18n-en="Book tickets">Mua vé ngay</a>
+        </section>
+        <section id="bookings-content" aria-label="Danh sách đặt vé" data-i18n-aria-vi="Danh sách đặt vé" data-i18n-aria-en="Booking list" hidden>
+          <p id="bookings-count" class="bookings-count"></p>
+          <ul id="bookings-list" class="bookings-list"></ul>
+          <nav id="pagination" class="bookings-pagination" aria-label="Phân trang đặt vé" data-i18n-aria-vi="Phân trang đặt vé" data-i18n-aria-en="Booking pagination" hidden><button id="previous-page" class="button-secondary" type="button" data-i18n-vi="Trang trước" data-i18n-en="Previous page">Trang trước</button><p id="page-range" aria-live="polite"></p><button id="next-page" class="button-secondary" type="button" data-i18n-vi="Trang sau" data-i18n-en="Next page">Trang sau</button></nav>
+        </section>
     </main>
     <footer class="bookings-footer" data-i18n-vi="Eventy · Khám phá. Đặt vé. Trải nghiệm." data-i18n-en="Eventy · Discover. Book. Experience.">Eventy · Khám phá. Đặt vé. Trải nghiệm.</footer>
   </div>

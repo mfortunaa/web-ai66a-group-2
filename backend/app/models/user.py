@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 
 from sqlalchemy import CheckConstraint, Column, String
 from sqlmodel import Field, SQLModel
@@ -15,4 +15,6 @@ class User(SQLModel, table=True):
     is_email_verified: bool = False
     token_version: int = 0
     role: str = Field(default="user", sa_column=Column(String(5), nullable=False, server_default="user"))
+    date_of_birth: date | None = None
+    phone_number: str | None = Field(default=None, max_length=20)
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))

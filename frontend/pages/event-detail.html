@@ -6,8 +6,8 @@
   <meta name="description" content="Thông tin chi tiết sự kiện trên Eventy.">
   <title data-i18n-vi="Chi tiết sự kiện | Eventy" data-i18n-en="Event details | Eventy">Chi tiết sự kiện | Eventy</title>
   <script src="../js/site-preferences-init.js?v=2"></script>
-  <link rel="stylesheet" href="../css/common.css">
-  <link rel="stylesheet" href="../css/event-detail.css">
+  <link rel="stylesheet" href="../css/common.css?v=3">
+  <link rel="stylesheet" href="../css/event-detail.css?v=3">
   <script type="module" src="../js/event-detail.js?v=2"></script>
 </head>
 <body>
@@ -18,14 +18,22 @@
         <span>eventy</span>
       </a>
       <nav class="site-nav" aria-label="Điều hướng chính" data-i18n-aria-vi="Điều hướng chính" data-i18n-aria-en="Main navigation">
-        <a class="nav-link" href="events.html" data-i18n-vi="Sự kiện" data-i18n-en="Events">Sự kiện</a>
         <button id="language-toggle" class="header-control" type="button">EN</button>
         <button id="theme-toggle" class="header-control" type="button" aria-pressed="false">
           <span class="theme-toggle-icon" data-theme-icon aria-hidden="true">◐</span>
           <span data-theme-label>Giao diện tối</span>
         </button>
-        <a class="nav-link" href="my-bookings.html" data-i18n-vi="Vé của tôi" data-i18n-en="My bookings">Vé của tôi</a>
-        <button id="logout" class="secondary" type="button" data-i18n-vi="Đăng xuất" data-i18n-en="Log out">Đăng xuất</button>
+        <details class="account-menu">
+          <summary class="account-menu-trigger" aria-label="Mở menu tài khoản" data-i18n-aria-vi="Mở menu tài khoản" data-i18n-aria-en="Open account menu">
+            <svg class="account-avatar" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+            <svg class="account-chevron" viewBox="0 0 16 16" aria-hidden="true"><path d="m3 6 5 5 5-5"/></svg>
+          </summary>
+          <div class="account-menu-panel">
+            <a class="account-menu-item" href="my-bookings.html" data-i18n-vi="Vé của tôi" data-i18n-en="My bookings">Vé của tôi</a>
+            <a class="account-menu-item" href="account-settings.html" data-i18n-vi="Cài đặt tài khoản" data-i18n-en="Account settings">Cài đặt tài khoản</a>
+            <button id="logout" class="account-menu-item account-menu-logout" type="button" data-i18n-vi="Đăng xuất" data-i18n-en="Log out">Đăng xuất</button>
+          </div>
+        </details>
       </nav>
     </header>
 

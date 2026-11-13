@@ -1,4 +1,4 @@
-import { translate as t } from './site-preferences.js';
+import { translate as t } from './site-preferences.js?v=7';
 import { localizeMessage } from './flow-messages.js';
 const reasons = {
   cancelled: t('Đặt vé đã hủy. Không hoàn tiền và không thể thanh toán lại.', 'This booking is cancelled. No refund is issued and payment cannot be resumed.'),

@@ -3,8 +3,9 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Đăng nhập quản trị | Eventy</title>
-  <link rel="stylesheet" href="../css/auth.css">
+  <title data-i18n-vi="Đăng nhập quản trị | Eventy" data-i18n-en="Admin sign in | Eventy">Đăng nhập quản trị | Eventy</title>
+  <script src="../js/site-preferences-init.js?v=2"></script>
+  <link rel="stylesheet" href="../css/auth.css?v=3">
   <link rel="stylesheet" href="../css/admin.css">
   <script type="module" src="../js/auth-pages.js"></script>
 </head>
@@ -12,23 +13,24 @@
   <div class="site-shell">
     <header class="admin-header">
       <a class="brand" href="../index.html"><svg class="brand-mark" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h18v5a2 2 0 0 0 0 4v5H3v-5a2 2 0 0 0 0-4V5Z"/><path d="M15 5v14" stroke-dasharray="2 2"/></svg>eventy</a>
-      <a href="../index.html">Về trang đăng nhập</a>
+      <a href="../index.html" data-i18n-vi="Về trang đăng nhập" data-i18n-en="Back to sign in">Về trang đăng nhập</a>
+      <div class="site-preference-controls"><button id="language-toggle" class="header-control" type="button">EN</button><button id="theme-toggle" class="header-control" type="button" aria-pressed="false"><span data-theme-icon aria-hidden="true">◐</span><span data-theme-label>Giao diện tối</span></button></div>
     </header>
     <main class="admin-login">
       <section class="admin-login-panel" aria-labelledby="page-title">
-        <h1 id="page-title">Đăng nhập quản trị</h1>
-        <p class="subtitle">Dùng tài khoản đã được cấp quyền để quản lý sự kiện và lịch diễn.</p>
+        <h1 id="page-title" data-i18n-vi="Đăng nhập quản trị" data-i18n-en="Admin sign in">Đăng nhập quản trị</h1>
+        <p class="subtitle" data-i18n-vi="Dùng tài khoản đã được cấp quyền để quản lý sự kiện và lịch diễn." data-i18n-en="Use an authorized account to manage events and performances.">Dùng tài khoản đã được cấp quyền để quản lý sự kiện và lịch diễn.</p>
         <form id="admin-login-form" aria-describedby="form-message" method="post">
           <div class="field"><label for="email">Email</label><input id="email" name="email" type="email" autocomplete="username" maxlength="254" spellcheck="false" autocapitalize="none" required></div>
           <div class="field">
-            <label for="password">Mật khẩu</label>
+            <label for="password" data-i18n-vi="Mật khẩu" data-i18n-en="Password">Mật khẩu</label>
             <div class="password-field"><input id="password" name="password" type="password" autocomplete="current-password" required><button class="password-toggle" type="button" aria-controls="password" aria-label="Hiện mật khẩu" aria-pressed="false">Hiện</button></div>
           </div>
           <p id="form-message" class="message" role="status" aria-live="polite" aria-atomic="true"></p>
-          <button class="primary" type="submit">Đăng nhập</button>
+          <button class="primary" type="submit" data-i18n-vi="Đăng nhập" data-i18n-en="Sign in">Đăng nhập</button>
         </form>
-        <p class="switch"><a href="forgot-password.html">Quên mật khẩu?</a></p>
-        <noscript><p class="message">Vui lòng bật JavaScript để đăng nhập.</p></noscript>
+        <p class="switch"><a href="forgot-password.html" data-i18n-vi="Quên mật khẩu?" data-i18n-en="Forgot password?">Quên mật khẩu?</a></p>
+        <noscript><p class="message" data-i18n-vi="Vui lòng bật JavaScript để đăng nhập." data-i18n-en="Please enable JavaScript to sign in.">Vui lòng bật JavaScript để đăng nhập.</p></noscript>
       </section>
     </main>
   </div>

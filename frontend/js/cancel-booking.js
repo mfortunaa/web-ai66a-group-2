@@ -1,5 +1,5 @@
 import { apiRequest } from './api.js';
-import { translate as t } from './site-preferences.js';
+import { translate as t } from './site-preferences.js?v=7';
 import { localizeMessage } from './flow-messages.js';
 
 export function createCancelButton(booking, onCancelled) {

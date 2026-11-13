@@ -1,12 +1,17 @@
 /* Shared sign-in and registration presentation. Recovery pages use auth.css. */
+/* Entry pages use a softer background and separate colors for the ticket preview. */
 .auth-entry-page { --ground: #f5f7f2; --ticket-ground: #e8eee3; --ticket-mark: #72846d; }
+/* Let the header, two-column main area and footer fill the viewport vertically. */
+:root[data-theme='dark'] .auth-entry-page { --ground: #151817; --ticket-ground: #2e3331; --ticket-mark: #8ca992; }
 .auth-entry-page .auth-shell { min-height: 100svh; display: flex; flex-direction: column; }
 .auth-entry-page .auth-header { min-height: 100px; }
 .auth-entry-page .header-context { font-size: 13px; }
+/* Twelve-column desktop grid places the introduction left and form right. */
 .auth-entry-page .auth-layout { flex: 1; width: 100%; grid-template-columns: repeat(12, minmax(0, 1fr)); align-content: center; align-items: center; margin: 28px 0 56px; column-gap: 16px; }
 .auth-entry-page .intro { grid-column: 1 / 7; padding: 0 56px 0 0; }
-.auth-entry-page .intro h2 { font-size: clamp(32px, 3.2vw, 44px); line-height: 1.16; letter-spacing: -.035em; margin-bottom: 18px; }
-.auth-entry-page .intro > p { font-size: 16px; line-height: 1.7; }
+.auth-entry-page .intro h2 { font-size: var(--font-size-display); line-height: 1.16; letter-spacing: -.035em; margin-bottom: 18px; }
+.auth-entry-page .intro > p { font-size: var(--font-size-body); line-height: 1.7; }
+/* Ticket preview: image area, caption, perforation notches and text truncation. */
 .event-ticket { margin: 28px 0 0; overflow: hidden; background: var(--ticket-ground); border-radius: 8px; }
 .event-ticket-art { position: relative; aspect-ratio: 16 / 9; }
 .event-ticket img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
@@ -14,11 +19,12 @@
 .event-ticket figcaption::before, .event-ticket figcaption::after { content: ''; position: absolute; top: -9px; width: 18px; height: 18px; background: var(--ground); border-radius: 50%; }
 .event-ticket figcaption::before { left: -9px; }
 .event-ticket figcaption::after { right: -9px; }
-.ticket-category, .ticket-venue { display: block; color: var(--muted); font-size: 12px; }
+.ticket-category, .ticket-venue { display: block; color: var(--muted); font-size: var(--font-size-caption); }
 .ticket-copy { min-width: 0; }
 .ticket-venue { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
-.event-ticket strong { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; overflow-wrap: anywhere; margin: 6px 0 8px; font-size: 21px; font-weight: 600; line-height: 1.35; letter-spacing: -.02em; }
+.event-ticket strong { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; overflow-wrap: anywhere; margin: 6px 0 8px; font-size: var(--font-size-content-title); font-weight: 600; line-height: 1.35; letter-spacing: -.02em; }
 .ticket-mark { flex: 0 0 40px; width: 40px; height: 40px; fill: none; stroke: var(--accent); stroke-width: 1.2; }
+/* Overlay arrow controls on the image; data attributes distinguish left/right. */
 .event-carousel-arrow {
   position: absolute;
   inset-block: 0;
@@ -46,43 +52,46 @@
   stroke-linejoin: round;
   paint-order: stroke;
 }
+/* Register/login form sizing and controls within the second grid column. */
 .auth-entry-page .form-panel { grid-column: 8 / -1; width: 100%; padding: 36px 32px; border: 0; border-radius: 12px; }
-.auth-entry-page h1 { font-size: 28px; line-height: 1.25; margin-bottom: 12px; }
-.auth-entry-page .subtitle { font-size: 14px; line-height: 1.65; margin-bottom: 30px; max-width: 32ch; }
-.auth-entry-page label { font-size: 13px; }
-.auth-entry-page input { height: 48px; border-radius: 6px; font-size: 15px; }
+.auth-entry-page h1 { font-size: var(--font-size-page-title); line-height: 1.25; margin-bottom: 12px; }
+.auth-entry-page .subtitle { font-size: var(--font-size-meta); line-height: 1.65; margin-bottom: 30px; max-width: 32ch; }
+.auth-entry-page label { font-size: var(--font-size-meta); }
+.auth-entry-page input { height: 48px; border-radius: 6px; font-size: var(--font-size-control); }
 .auth-entry-page input:focus { border-color: var(--accent); }
 .auth-entry-page input:autofill { background-color: var(--raised); }
 .auth-entry-page .field + .field { margin-top: 20px; }
 .field-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
 .field-heading label { margin: 0; }
-.field-heading a { font-size: 12px; font-weight: 600; text-decoration: none; padding: 8px 0; margin: -8px 0; }
+.field-heading a { font-size: var(--font-size-caption); font-weight: 600; text-decoration: none; padding: 8px 0; margin: -8px 0; }
 .field-heading a:hover { text-decoration: underline; }
-.auth-entry-page .password-toggle { min-height: 46px; font-size: 13px; }
-.auth-entry-page .primary { min-height: 48px; margin-top: 24px; display: flex; justify-content: center; align-items: center; gap: 14px; border-radius: 6px; font-size: 14px; }
+.auth-entry-page .password-toggle { min-height: 46px; font-size: var(--font-size-meta); }
+.auth-entry-page .primary { min-height: 48px; margin-top: 24px; display: flex; justify-content: center; align-items: center; gap: 14px; border-radius: 6px; font-size: var(--font-size-control); }
 .auth-entry-page .primary:disabled { opacity: .8; }
-.auth-entry-page .switch { text-align: center; margin-top: 20px; font-size: 13px; }
+.auth-entry-page .switch { text-align: center; margin-top: 20px; font-size: var(--font-size-meta); }
 .auth-entry-page .switch a { margin-left: 4px; }
-.auth-note { margin-top: 24px; text-align: center; font-size: 12px; color: var(--muted); }
-.auth-entry-page .auth-footer { display: flex; justify-content: space-between; gap: 16px; font-size: 12px; padding-bottom: 24px; }
+.auth-note { margin-top: 24px; text-align: center; font-size: var(--font-size-caption); color: var(--muted); }
+.auth-entry-page .auth-footer { display: flex; justify-content: space-between; gap: 16px; font-size: var(--font-size-caption); padding-bottom: 24px; }
+/* At medium widths reduce the gap/padding while retaining two columns. */
 @media (max-width: 1100px) {
   .auth-entry-page .intro { grid-column: 1 / 7; padding-right: 24px; }
   .auth-entry-page .form-panel { grid-column: 7 / -1; padding: 32px 24px; max-width: 440px; justify-self: end; }
 }
+/* Keep ticket captions readable before switching the page to one column. */
 @media (max-width: 980px) {
   .event-ticket figcaption { min-height: 154px; padding-inline: 18px; }
-  .event-ticket strong { -webkit-line-clamp: 3; font-size: 18px; line-height: 1.3; }
+  .event-ticket strong { -webkit-line-clamp: 3; font-size: var(--font-size-card-title); line-height: 1.3; }
   .ticket-mark { flex-basis: 28px; width: 28px; height: 28px; }
 }
+/* Mobile stacks the introduction and form, then stacks footer copy. */
 @media (max-width: 700px) {
   .auth-entry-page .auth-header { min-height: 80px; }
   .auth-entry-page .auth-layout { margin: 16px 0 36px; gap: 36px; align-items: center; }
   .auth-entry-page .form-panel { padding: 28px 24px; max-width: 440px; }
-  .auth-entry-page h1 { font-size: 26px; }
   .auth-entry-page .intro { padding: 0; width: 100%; max-width: 440px; }
   .auth-entry-page .intro h2 { font-size: 30px; }
   .auth-entry-page .intro h2 br { display: initial; }
   .auth-entry-page .intro > p { font-size: 14px; }
   .event-ticket { margin-top: 20px; }
-  .auth-entry-page .auth-footer { flex-direction: column; gap: 4px; font-size: 11px; }
+  .auth-entry-page .auth-footer { flex-direction: column; gap: 4px; font-size: var(--font-size-caption); }
 }

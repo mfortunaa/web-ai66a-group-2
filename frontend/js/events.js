@@ -1,7 +1,7 @@
 import { API_BASE_URL } from './config.js';
-import { apiRequest } from './api.js';
-import { logout, requireAuth } from './auth.js';
-import { getLanguage, initializeSitePreferences, translate } from './site-preferences.js';
+import { apiRequest } from './api.js?v=3';
+import { logout, requireAuth } from './auth.js?v=5';
+import { getLanguage, initializeSitePreferences, translate } from './site-preferences.js?v=7';
 
 const form = document.querySelector('#filters');
 const message = document.querySelector('#page-message');
@@ -14,6 +14,15 @@ let catalogItems = [];
 
 const timeZone = 'Asia/Ho_Chi_Minh';
 initializeSitePreferences();
+const dateInputs = form.querySelectorAll('input[type="date"]');
+function syncEmptyDateHints() {
+  dateInputs.forEach((input) => input.classList.toggle('date-empty', input.value === ''));
+}
+dateInputs.forEach((input) => {
+  input.addEventListener('input', syncEmptyDateHints);
+  input.addEventListener('change', syncEmptyDateHints);
+});
+syncEmptyDateHints();
 document.querySelector('#logout').addEventListener('click', logout);
 window.addEventListener('eventy:languagechange', () => {
   if (catalogItems.length) updateCatalog(catalogItems);
@@ -202,7 +211,10 @@ form.addEventListener('submit', (event) => {
   applyFilters();
 });
 form.addEventListener('reset', () => {
-  window.setTimeout(loadEvents, 0);
+  window.setTimeout(() => {
+    syncEmptyDateHints();
+    loadEvents();
+  }, 0);
 });
 retryButton.addEventListener('click', () => retryAction());
 

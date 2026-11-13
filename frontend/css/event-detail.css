@@ -51,14 +51,15 @@
 }
 .detail-poster img { display: block; width: 100%; height: 100%; object-fit: cover; }
 .detail-poster figcaption { padding: 16px; color: var(--muted); }
-.status-pill { display: inline-flex; margin: 0 0 14px; padding: 5px 10px; color: var(--accent); background: var(--surface); border-radius: 3px; font-size: 12px; font-weight: 700; }
-.status-pill.unavailable { color: var(--muted); background: var(--surface); }
+.status-pill { display: inline-flex; margin: 0 0 14px; padding: 5px 10px; color: var(--accent); background: var(--surface); border-radius: 3px; font-size: var(--font-size-caption); font-weight: 700; }
+.status-pill.unavailable { color: var(--negative); background: #fbefed; }
+:root[data-theme='dark'] .status-pill.unavailable { background: #472b2a; }
 h1, h2, p { margin-top: 0; }
-h1 { margin-bottom: 22px; font-size: clamp(24px, 3vw, 32px); font-weight: 700; line-height: 1.2; overflow-wrap: anywhere; }
-h2 { margin-bottom: 16px; font-size: 20px; font-weight: 700; line-height: 1.3; }
-.event-time { margin-bottom: 14px; color: var(--accent); font-size: 14px; font-weight: 700; }
+h1 { margin-bottom: 22px; font-size: var(--font-size-page-title); font-weight: 700; line-height: 1.2; overflow-wrap: anywhere; }
+h2 { margin-bottom: 16px; font-size: var(--font-size-section-title); font-weight: 700; line-height: 1.3; }
+.event-time { margin-bottom: 14px; color: var(--accent); font-size: var(--font-size-meta); font-weight: 700; }
 .event-venue { margin-bottom: 4px; font-weight: 700; }
-.event-address { color: var(--muted); font-size: 14px; overflow-wrap: anywhere; }
+.event-address { color: var(--muted); font-size: var(--font-size-meta); overflow-wrap: anywhere; }
 .price-panel {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -70,10 +71,10 @@ h2 { margin-bottom: 16px; font-size: 20px; font-weight: 700; line-height: 1.3; }
   border-top: 1px solid var(--control);
 }
 .price-panel > span:first-child { color: var(--muted); }
-.price-panel strong { grid-column: 1; grid-row: 2; color: var(--accent); font-size: 25px; }
-#event-availability { grid-column: 2; grid-row: 2; color: var(--muted); font-size: 13px; text-align: right; }
+.price-panel strong { grid-column: 1; grid-row: 2; color: var(--accent); font-size: 24px; }
+#event-availability { grid-column: 2; grid-row: 2; color: var(--muted); font-size: var(--font-size-meta); text-align: right; }
 .sales-opening { margin: 16px 0 0; color: var(--accent); font-weight: 600; }
-.booking-note { margin: 16px 0 0; padding: 12px 14px; color: var(--muted); background: var(--surface); border: 1px solid var(--border); border-radius: 6px; font-size: 14px; }
+.booking-note { margin: 16px 0 0; padding: 12px 14px; color: var(--muted); background: var(--surface); border: 1px solid var(--border); border-radius: 6px; font-size: var(--font-size-meta); }
 .buy-button { display: inline-flex; min-height: 48px; align-items: center; justify-content: center; width: 100%; margin-top: 16px; padding: 10px 24px; color: #10251a; background: var(--action); border-radius: 4px; font-weight: 700; text-decoration: none; }
 .buy-button:hover { color: #10251a; background: #54db98; }
 .detail-section { margin: 0 0 20px; padding: 22px 24px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; }
@@ -82,7 +83,7 @@ h2 { margin-bottom: 16px; font-size: 20px; font-weight: 700; line-height: 1.3; }
 .session-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; padding: 0; margin: 0; list-style: none; }
 .session-item { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; padding: 14px; background: var(--raised); border: 1px solid var(--border); border-radius: 6px; }
 .session-time { font-weight: 600; }
-.session-availability { flex: 0 0 auto; color: var(--muted); font-size: 13px; text-align: right; }
+.session-availability { flex: 0 0 auto; color: var(--muted); font-size: var(--font-size-meta); text-align: right; }
 
 @media (max-width: 700px) {
   .detail-layout { grid-template-columns: minmax(0, 1fr); grid-template-areas: 'poster' 'summary'; }

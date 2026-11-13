@@ -9,8 +9,12 @@ All JSON endpoints below use `/api/auth`. Emails are trimmed and lowercased.
 | POST /resend-verification | `{"email":"an@example.com"}` | 200 generic message; 503 `delivery_failed` if an eligible account's delivery fails |
 | POST /forgot-password | `{"email":"an@example.com"}` | 200 identical message for known/unknown accounts, including delivery failure |
 | POST /reset-password | `{"token":"emailed-token","password":"newpassword123"}` | 200 `{"message":"Password updated. Please log in."}` |
+| GET /me | Bearer token | 200 authenticated profile |
+| PATCH /me | `{"full_name":"New Name"}` | 200 updated profile; extra fields such as `email` are rejected |
 
 `POST /token` keeps OAuth2 form fields `username` and `password`. Wrong credentials return 401. Correct credentials for an unverified account return 403 `{"detail":{"code":"email_not_verified","action":"verify-email"}}`. Tokens contain an account version checked by `get_current_user`.
+
+Passwords must contain at least eight characters and have no application-level maximum. New passwords are hashed with Argon2id; existing bcrypt hashes remain supported so current accounts can still sign in. The profile update endpoint can change `full_name` only; email cannot be edited.
 
 429 responses contain `{"detail":{"code":"rate_limited","retry_after":60}}` and a `Retry-After` header, exposed through CORS. Invalid/expired/consumed challenges return 400 with code `invalid_challenge`. No response includes OTPs or reset tokens.
 

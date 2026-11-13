@@ -1,12 +1,15 @@
-import { adminLoginUrl, getCurrentUser, logout } from './auth.js';
+import { adminLoginUrl, getCurrentUser, logout } from './auth.js?v=5';
 import { apiRequest } from './api.js';
 import { API_BASE_URL } from './config.js';
+import { applyTranslations, getLanguage, initializeSitePreferences, translate } from './site-preferences.js?v=7';
+import { localizeMessage } from './flow-messages.js';
 
+initializeSitePreferences();
 const endpoint = '/api/admin/events';
 const refreshIntervalMs = 10_000;
 const dates = ['starts_at', 'ends_at', 'sales_open_at', 'sales_close_at'];
-const dateFormat = new Intl.DateTimeFormat('vi-VN', { dateStyle: 'medium', timeZone: 'Asia/Ho_Chi_Minh' });
-const numberFormat = new Intl.NumberFormat('vi-VN');
+const dateFormat = () => new Intl.DateTimeFormat(getLanguage() === 'en' ? 'en-US' : 'vi-VN', { dateStyle: 'medium', timeZone: 'Asia/Ho_Chi_Minh' });
+const numberFormat = () => new Intl.NumberFormat(getLanguage() === 'en' ? 'en-US' : 'vi-VN');
 const errors = {
   duplicate_slug: 'Mã sự kiện đã được sử dụng.',
   booked_session: 'Suất đã có đơn đặt vé. Hãy giữ suất và giờ diễn hiện tại.',
@@ -34,7 +37,10 @@ const addButton = byId('add-event');
 const retryButton = byId('reload-events');
 const eventList = byId('event-list');
 const inventorySync = byId('inventory-sync');
-const inventorySyncLabel = inventorySync.textContent;
+const inventorySyncLabel = () => translate(
+  'Số vé tự cập nhật mỗi 10 giây.',
+  'Ticket inventory refreshes every 10 seconds.',
+);
 let events = [];
 let listRevision = 0;
 let refreshing = false;
@@ -45,7 +51,7 @@ let coverPreviewUrl;
 function element(tag, className, content) {
   const node = document.createElement(tag);
   if (className) node.className = className;
-  if (content !== undefined) node.textContent = content;
+  if (content !== undefined) node.textContent = localizeMessage(content);
   return node;
 }
 
@@ -61,13 +67,13 @@ function eventRequest(path = '', options = {}) {
 }
 
 function errorText(error) {
-  if (error.status === 403) return 'Tài khoản hiện không có quyền quản trị.';
-  if (error.status === 404) return 'Không tìm thấy sự kiện. Hãy tải lại danh sách.';
-  return errors[error.code] || error.message;
+  if (error.status === 403) return translate('Tài khoản hiện không có quyền quản trị.', 'This account does not have administrator access.');
+  if (error.status === 404) return translate('Không tìm thấy sự kiện. Hãy tải lại danh sách.', 'Event not found. Please reload the list.');
+  return localizeMessage(errors[error.code] || error.message);
 }
 
 function showStatus(message, isError = false) {
-  pageStatus.textContent = message;
+  pageStatus.textContent = localizeMessage(message);
   pageStatus.classList.toggle('error', isError);
 }
 
@@ -88,7 +94,7 @@ function refreshCover() {
     : file?.type && !['image/jpeg', 'image/png', 'image/webp'].includes(file.type) ? errors.cover_format
     : '';
   coverInput.setCustomValidity(message);
-  byId('cover-status').textContent = message;
+  byId('cover-status').textContent = localizeMessage(message);
   clearCoverButton.hidden = !file;
   coverUrlInput.disabled = Boolean(file);
   if (file && !message) coverPreviewUrl = URL.createObjectURL(file);
@@ -100,7 +106,7 @@ function refreshCover() {
 
 function renderEvents() {
   events.sort((a, b) => a.starts_at.localeCompare(b.starts_at) || a.id - b.id);
-  byId('event-count').textContent = `${numberFormat.format(events.length)} sự kiện`;
+  byId('event-count').textContent = translate(`${numberFormat().format(events.length)} sự kiện`, `${numberFormat().format(events.length)} events`);
   byId('empty-events').hidden = events.length > 0;
   byId('event-rows').replaceChildren(...events.map((event) => {
     const row = element('li', 'event-row');
@@ -114,29 +120,32 @@ function renderEvents() {
     const details = element('div');
     details.append(
       element('h3', 'event-name', event.title),
-      element('div', 'event-meta', `${dateFormat.format(new Date(event.starts_at))} · ${event.venue}`),
+      element('div', 'event-meta', `${dateFormat().format(new Date(event.starts_at))} · ${event.venue}`),
     );
     identity.append(cover, details);
 
     const stock = element('div', 'event-stock');
-    const capacityText = `${numberFormat.format(event.tickets_sold)} / ${numberFormat.format(event.capacity)} vé đã bán`;
+    const capacityText = translate(
+      `${numberFormat().format(event.tickets_sold)} / ${numberFormat().format(event.capacity)} vé đã bán`,
+      `${numberFormat().format(event.tickets_sold)} / ${numberFormat().format(event.capacity)} tickets sold`,
+    );
     const progress = element('progress');
     progress.max = event.capacity;
     progress.value = event.tickets_sold;
     progress.setAttribute('aria-label', capacityText);
-    const remainingText = `Còn ${numberFormat.format(event.available_tickets)} vé theo lịch`;
+    const remainingText = translate(`Còn ${numberFormat().format(event.available_tickets)} vé theo lịch`, `${numberFormat().format(event.available_tickets)} tickets remaining`);
     stock.append(element('span', '', capacityText), progress, element('span', 'event-remaining', remainingText));
 
     const actions = element('div', 'event-actions');
-    const editButton = action('Sửa', () => openEditor(event));
-    const deleteButton = action('Xóa', () => {
+    const editButton = action(translate('Sửa', 'Edit'), () => openEditor(event));
+    const deleteButton = action(translate('Xóa', 'Delete'), () => {
       deletingId = event.id;
       byId('delete-event-name').textContent = event.title;
       byId('delete-status').textContent = '';
       deleteDialog.showModal();
     }, 'delete-event');
-    editButton.setAttribute('aria-label', `Sửa ${event.title}`);
-    deleteButton.setAttribute('aria-label', `Xóa ${event.title}`);
+    editButton.setAttribute('aria-label', translate(`Sửa ${event.title}`, `Edit ${event.title}`));
+    deleteButton.setAttribute('aria-label', translate(`Xóa ${event.title}`, `Delete ${event.title}`));
     editButton.dataset.eventAction = 'edit';
     deleteButton.dataset.eventAction = 'delete';
     actions.append(editButton, deleteButton);
@@ -146,7 +155,8 @@ function renderEvents() {
 }
 
 function setInventoryStatus(message) {
-  if (inventorySync.textContent !== message) inventorySync.textContent = message;
+  const translated = localizeMessage(message);
+  if (inventorySync.textContent !== translated) inventorySync.textContent = translated;
 }
 
 function fetchEvents() {
@@ -159,7 +169,7 @@ async function refreshEvents() {
   const revision = listRevision;
   try {
     const { items } = await fetchEvents();
-    setInventoryStatus(inventorySyncLabel);
+    setInventoryStatus(inventorySyncLabel());
     // Ignore a response started before a local edit or deletion.
     if (revision !== listRevision || editor.open || deleteDialog.open) return;
     if (JSON.stringify(items) === JSON.stringify(events)) return;
@@ -191,6 +201,7 @@ function fromVietnam(value) {
 
 function addSession(item = {}) {
   const row = byId('session-template').content.firstElementChild.cloneNode(true);
+  applyTranslations(row);
   if (item.id) row.dataset.sessionId = item.id;
   const start = row.querySelector('[name="session_start"]');
   start.value = vietnamInput(item.starts_at);
@@ -209,7 +220,7 @@ function openEditor(event) {
   coverUrlInput.disabled = false;
   sessionFields.replaceChildren();
   editingId = event?.id ?? null;
-  byId('editor-title').textContent = event ? 'Sửa sự kiện' : 'Thêm sự kiện';
+  byId('editor-title').textContent = event ? translate('Sửa sự kiện', 'Edit event') : translate('Thêm sự kiện', 'Add event');
   byId('editor-status').textContent = '';
   if (event) {
     for (const key of new FormData(form).keys()) {
@@ -272,7 +283,7 @@ function bindDialog(dialog, statusId, save) {
     event.preventDefault();
     if (submitButton.disabled) return;
     const data = dialog === editor ? eventPayload() : null;
-    status.textContent = data ? validateSchedule(data) : '';
+    status.textContent = data ? localizeMessage(validateSchedule(data)) : '';
     if (status.textContent) {
       status.scrollIntoView({ block: 'nearest' });
       return;
@@ -306,7 +317,6 @@ async function loadEvents() {
       window.location.replace(adminLoginUrl);
       return;
     }
-    byId('account-name').textContent = user.full_name;
     byId('admin-account').hidden = false;
     showStatus('Đang tải danh sách sự kiện…');
     ({ items: events } = await fetchEvents());
@@ -368,6 +378,20 @@ bindDialog(deleteDialog, 'delete-status', async () => {
   listRevision += 1;
   events = events.filter((event) => event.id !== deletingId);
   return 'Đã xóa sự kiện.';
+});
+
+window.addEventListener('eventy:languagechange', () => {
+  pageStatus.textContent = localizeMessage(pageStatus.textContent);
+  inventorySync.textContent = localizeMessage(inventorySync.textContent);
+  byId('cover-status').textContent = localizeMessage(byId('cover-status').textContent);
+  byId('editor-status').textContent = localizeMessage(byId('editor-status').textContent);
+  byId('delete-status').textContent = localizeMessage(byId('delete-status').textContent);
+  if (editor.open) {
+    byId('editor-title').textContent = editingId === null
+      ? translate('Thêm sự kiện', 'Add event')
+      : translate('Sửa sự kiện', 'Edit event');
+  }
+  renderEvents();
 });
 
 loadEvents();

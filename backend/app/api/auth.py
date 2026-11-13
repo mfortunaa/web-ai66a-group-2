@@ -12,7 +12,7 @@ from app.core.security import create_access_token, get_current_user, hash_passwo
 from app.db.session import get_session
 from app.models.auth_challenge import AuthChallenge
 from app.models.user import User
-from app.schemas.auth import EmailRequest, RegisterRequest, RegistrationResponse, ResetRequest, TokenResponse, UserProfile, UserPublic, VerifyRequest
+from app.schemas.auth import EmailRequest, RegisterRequest, RegistrationResponse, ResetRequest, TokenResponse, UserProfile, UserProfileUpdate, UserPublic, VerifyRequest
 from app.services import auth as service
 
 router = APIRouter(prefix="/api/auth", tags=["Authentication"])
@@ -74,6 +74,9 @@ def login(form: Annotated[OAuth2PasswordRequestForm, Depends()], request: Reques
         session.delete(counter)
     if not user.is_email_verified:
         service.fail(session, 403, "email_not_verified", action="verify-email")
+    if user.password_hash.startswith(("$2a$", "$2b$", "$2y$")):
+        user.password_hash = hash_password(form.password)
+        session.add(user)
     token = create_access_token(user.id, user.token_version)
     session.commit()
     return TokenResponse(access_token=token, expires_in=get_settings().access_token_expire_minutes * 60)
@@ -148,4 +151,21 @@ def reset(data: ResetRequest, request: Request, session: SessionDep):
 
 @router.get("/me", response_model=UserProfile)
 def me(user: Annotated[User, Depends(get_current_user)]):
+    return user
+
+
+@router.patch("/me", response_model=UserProfile)
+def update_me(
+    data: UserProfileUpdate,
+    session: SessionDep,
+    user: Annotated[User, Depends(get_current_user)],
+):
+    user.full_name = data.full_name
+    if "date_of_birth" in data.model_fields_set:
+        user.date_of_birth = data.date_of_birth
+    if "phone_number" in data.model_fields_set:
+        user.phone_number = data.phone_number
+    session.add(user)
+    session.commit()
+    session.refresh(user)
     return user

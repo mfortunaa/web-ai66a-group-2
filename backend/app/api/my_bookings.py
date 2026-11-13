@@ -1,4 +1,5 @@
-from typing import Annotated
+from datetime import datetime, timezone
+from typing import Annotated, Literal
 
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy import func
@@ -24,17 +25,37 @@ def list_my_bookings(
     session: DbSession,
     limit: Annotated[int, Query(ge=1, le=50)] = 10,
     offset: Annotated[int, Query(ge=0, le=10_000)] = 0,
+    status: Annotated[Literal["confirmed", "processing", "cancelled"] | None, Query()] = None,
+    period: Annotated[Literal["upcoming", "past"] | None, Query()] = None,
 ):
+    conditions = [Booking.user_id == user.id]
+    if status == "confirmed":
+        conditions.extend((Booking.status == "confirmed", Booking.cancelled_at.is_(None)))
+    elif status == "processing":
+        conditions.extend((
+            Booking.status.in_(("pending", "payment_failed")),
+            Booking.cancelled_at.is_(None),
+        ))
+    elif status == "cancelled":
+        conditions.append(Booking.cancelled_at.is_not(None))
+
+    now = datetime.now(timezone.utc)
+    if period == "upcoming":
+        conditions.append(EventSession.starts_at >= now)
+    elif period == "past":
+        conditions.append(EventSession.starts_at < now)
+
     total = session.exec(
         select(func.count())
         .select_from(Booking)
-        .where(Booking.user_id == user.id)
+        .join(EventSession, EventSession.id == Booking.event_session_id)
+        .where(*conditions)
     ).one()
     rows = session.exec(
         select(Booking, Event, EventSession)
         .join(Event, Event.id == Booking.event_id)
         .join(EventSession, EventSession.id == Booking.event_session_id)
-        .where(Booking.user_id == user.id)
+        .where(*conditions)
         .order_by(Booking.created_at.desc(), Booking.id.desc())
         .offset(offset)
         .limit(limit)

@@ -3,6 +3,8 @@ from typing import Annotated
 
 import bcrypt
 import jwt
+from argon2 import PasswordHasher
+from argon2.exceptions import InvalidHashError, VerificationError
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlmodel import Session
@@ -12,19 +14,26 @@ from app.db.session import get_session
 from app.models.user import User
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/token")
+password_hasher = PasswordHasher()
 
 
 def hash_password(password: str) -> str:
-    return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+    return password_hasher.hash(password)
 
 
 def verify_password(password: str, password_hash: str) -> bool:
+    if password_hash.startswith("$argon2"):
+        try:
+            return password_hasher.verify(password_hash, password)
+        except (InvalidHashError, VerificationError):
+            return False
+
     encoded = password.encode("utf-8")
-    if len(encoded) > 72 or b"\x00" in encoded:
+    if not password_hash.startswith(("$2a$", "$2b$", "$2y$")) or len(encoded) > 72 or b"\x00" in encoded:
         return False
     try:
         return bcrypt.checkpw(encoded, password_hash.encode("utf-8"))
-    except ValueError:
+    except (TypeError, ValueError):
         return False
 
 

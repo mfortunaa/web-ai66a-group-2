@@ -37,9 +37,10 @@ def add_event_and_session(
     capacity: int = 20,
     tickets_sold: int = 0,
     sales_close_at: datetime | None = None,
+    starts_at: datetime | None = None,
 ) -> tuple[int, int]:
     now = datetime.now(timezone.utc)
-    starts_at = now + timedelta(days=2)
+    starts_at = starts_at or now + timedelta(days=2)
     with Session(db_engine) as session:
         event = Event(
             slug=f"my-bookings-{now.timestamp()}",
@@ -50,7 +51,7 @@ def add_event_and_session(
             address="Event address",
             starts_at=starts_at,
             ends_at=starts_at + timedelta(hours=2),
-            sales_open_at=now - timedelta(days=1),
+            sales_open_at=min(now - timedelta(days=1), starts_at - timedelta(days=1)),
             sales_close_at=sales_close_at or starts_at,
             ticket_price_vnd=125_000,
             capacity=capacity,
@@ -247,6 +248,50 @@ def test_my_bookings_pagination_is_bounded_and_reports_total(client, db_engine):
     assert len(first_page.json()["items"]) == 2
     assert [item["id"] for item in second_page.json()["items"]] == [booking_ids[2]]
     for query in ("limit=0", "limit=51", "offset=-1", "offset=10001"):
+        assert client.get(f"/api/bookings?{query}", headers=headers).status_code == 422
+
+
+def test_my_bookings_status_and_period_filters_keep_pagination_totals(client, db_engine):
+    headers = create_account(client, "booking-filters@example.com")
+    user_id = account_id(db_engine, "booking-filters@example.com")
+    now = datetime.now(timezone.utc)
+    future_event, future_session = add_event_and_session(
+        db_engine, starts_at=now + timedelta(days=2),
+    )
+    past_event, past_session = add_event_and_session(
+        db_engine, starts_at=now - timedelta(days=2),
+    )
+    pending_id = add_booking(
+        db_engine, user_id=user_id, event_id=future_event, event_session_id=future_session,
+    )
+    confirmed_id = add_booking(
+        db_engine, user_id=user_id, event_id=future_event, event_session_id=future_session,
+        status=BookingStatus.CONFIRMED.value,
+    )
+    failed_id = add_booking(
+        db_engine, user_id=user_id, event_id=past_event, event_session_id=past_session,
+        status=BookingStatus.PAYMENT_FAILED.value,
+    )
+    cancelled = client.post(f"/api/bookings/{pending_id}/cancel", headers=headers)
+    assert cancelled.status_code == 200
+
+    confirmed = client.get(
+        "/api/bookings?status=confirmed&period=upcoming", headers=headers,
+    ).json()
+    processing = client.get(
+        "/api/bookings?status=processing&period=past&limit=1", headers=headers,
+    ).json()
+    cancelled_list = client.get(
+        "/api/bookings?status=cancelled&period=upcoming", headers=headers,
+    ).json()
+
+    assert confirmed["total"] == 1
+    assert [item["id"] for item in confirmed["items"]] == [confirmed_id]
+    assert processing["total"] == 1
+    assert [item["id"] for item in processing["items"]] == [failed_id]
+    assert cancelled_list["total"] == 1
+    assert cancelled_list["items"][0]["status"] == "cancelled"
+    for query in ("status=unknown", "period=unknown"):
         assert client.get(f"/api/bookings?{query}", headers=headers).status_code == 422
 
 

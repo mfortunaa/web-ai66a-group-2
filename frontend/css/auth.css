@@ -1,51 +1,60 @@
-@import url('./common.css');
+@import url('./common.css?v=3');
 
+/* Shared account-page foundation; auth-entry.css overrides this for login/register. */
 /* Editorial greeting, adapted to account forms; the existing brand palette and type are kept.
    At 1100px: 12 x 77px + 11 x 16px = 1100px; panels span 5/7 columns.
    Mobile puts the form before the supporting account information. */
 .auth-header { min-height: 96px; display: flex; align-items: center; justify-content: space-between; gap: var(--gap); }
-.header-context { color: var(--muted); font-size: 14px; }
+.auth-header .site-preference-controls { display: flex; align-items: center; gap: 8px; }
+.header-context { color: var(--muted); font-size: var(--font-size-meta); }
 .auth-layout { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: var(--gap); align-items: start; margin: 48px 0; }
 .form-panel { grid-column: 6 / -1; grid-row: 1; padding: var(--pad); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
-h1 { font-size: 28px; font-weight: 600; line-height: 1.25; letter-spacing: -.02em; margin: 0 0 12px; }
-h2 { font-size: 24px; font-weight: 600; line-height: 1.35; letter-spacing: -.02em; margin: 0 0 16px; }
+h1 { font-size: var(--font-size-page-title); font-weight: 600; line-height: 1.25; letter-spacing: -.02em; margin: 0 0 12px; }
+h2 { font-size: var(--font-size-section-title); font-weight: 600; line-height: 1.35; letter-spacing: -.02em; margin: 0 0 16px; }
 p { margin: 0; }
 .subtitle { color: var(--muted); margin-bottom: 24px; }
+/* Keep form fields consistently spaced and sized across account pages. */
 .field + .field { margin-top: 16px; }
-label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+label { display: block; font-size: var(--font-size-meta); font-weight: 600; margin-bottom: 8px; }
 input { display: block; width: 100%; min-width: 0; height: 44px; padding: 10px 12px; background: var(--surface); color: var(--text); border: 1px solid var(--control); border-radius: var(--radius); }
 input:hover { border-color: var(--muted); }
+/* JS marks invalid fields; the CSS makes that state visible. */
 input[aria-invalid='true'] { border-color: var(--negative); }
+/* Position the show/hide password control inside the input's right edge. */
 .password-field { position: relative; }
 .password-field input { padding-right: 72px; }
-.password-toggle { position: absolute; right: 1px; top: 1px; min-height: 42px; min-width: 62px; padding: 0 12px; border: 0; background: transparent; color: var(--muted); border-radius: var(--radius); font-size: 14px; }
-small { display: block; font-size: 12px; line-height: 1.5; color: var(--muted); margin-top: 8px; }
+.password-toggle { position: absolute; right: 1px; top: 1px; min-height: 42px; min-width: 62px; padding: 0 12px; border: 0; background: transparent; color: var(--muted); border-radius: var(--radius); font-size: var(--font-size-meta); }
+small { display: block; font-size: var(--font-size-caption); line-height: 1.5; color: var(--muted); margin-top: 8px; }
 .primary { width: 100%; margin-top: 16px; }
 .password-toggle:hover { background: var(--raised); }
-.message { color: var(--negative); font-size: 14px; line-height: 1.5; overflow-wrap: anywhere; }
+/* Validation and server messages share one live region below the form. */
+.message { color: var(--negative); font-size: var(--font-size-meta); line-height: 1.5; overflow-wrap: anywhere; }
 form .message { margin: 16px 0; }
 .message:empty { display: none; }
 .message.success { color: var(--accent); }
 .message:not(:empty) + .primary { margin-top: 0; }
-.switch { font-size: 14px; margin-top: 24px; color: var(--muted); }
+.switch { font-size: var(--font-size-meta); margin-top: 24px; color: var(--muted); }
 .switch a { display: inline-flex; align-items: center; min-height: 44px; font-weight: 600; }
 .intro { grid-column: 1 / 6; grid-row: 1; padding: var(--pad) var(--pad) var(--pad) 0; }
 .intro p { color: var(--muted); }
-.account-benefits { padding: 0; margin: 24px 0; list-style: none; font-size: 14px; }
+.account-benefits { padding: 0; margin: 24px 0; list-style: none; font-size: var(--font-size-meta); }
 .account-benefits li + li { margin-top: 12px; }
-.intro-note { font-size: 14px; }
-.auth-footer { font-size: 12px; color: var(--muted); padding: 0 0 32px; }
+.intro-note { font-size: var(--font-size-meta); }
+.auth-footer { font-size: var(--font-size-caption); color: var(--muted); padding: 0 0 32px; }
 .account-content { margin: 48px 0; }
+.account-content > .eyebrow { margin-bottom: 8px; color: var(--accent); font-size: 12px; font-weight: 700; letter-spacing: .12em; }
 .account-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--gap); margin-top: 24px; align-items: start; }
 .profile-panel, .notice { border-radius: var(--radius); padding: var(--pad); background: var(--raised); }
+.profile-panel { max-width: 640px; margin-top: 24px; border: 1px solid var(--border); }
 .notice { background: transparent; padding: var(--pad) 0; }
-.account-grid h2 { font-size: 18px; }
+.account-grid h2 { font-size: var(--font-size-card-title); }
 .notice p { color: var(--muted); }
 dl { margin: 0; }
 dl > div + div { margin-top: 16px; }
-dt { color: var(--muted); font-size: 14px; margin-bottom: 4px; }
+dt { color: var(--muted); font-size: var(--font-size-meta); margin-bottom: 4px; }
 dd { margin: 0; overflow-wrap: anywhere; }
 .account-content > .message { margin: 16px 0; }
+/* Tablet keeps two columns; mobile stacks content and makes the form full width. */
 @media (max-width: 1100px) {
   .auth-layout { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .intro { grid-column: 1; }
@@ -57,11 +66,12 @@ dd { margin: 0; overflow-wrap: anywhere; }
 @media (max-width: 700px) {
   :root { --pad: 20px; }
   .auth-header { min-height: 80px; }
+  .auth-header { flex-wrap: wrap; }
+  .auth-header .site-preference-controls { margin-left: auto; }
   .header-context { display: none; }
   .auth-layout { display: flex; flex-direction: column; gap: 24px; margin: 16px 0 32px; }
   .form-panel { width: 100%; padding: 20px; }
   .intro { width: 100%; padding: 8px 0; }
-  h1 { font-size: 24px; }
   .intro h2 { font-size: 22px; }
   .intro br { display: none; }
   .intro-note { margin-top: 16px; }

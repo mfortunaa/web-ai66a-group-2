@@ -1,6 +1,6 @@
-import { translate as t, getLanguage, initializeSitePreferences } from './site-preferences.js';
+import { translate as t, getLanguage, initializeSitePreferences } from './site-preferences.js?v=7';
 import { apiRequest } from './api.js';
-import { logout, requireAuth } from './auth.js';
+import { logout, requireAuth } from './auth.js?v=5';
 import { retryUnavailableMessage } from './booking-status.js';
 import { localizeMessage } from './flow-messages.js';
 
