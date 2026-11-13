@@ -44,7 +44,7 @@ Keep your `.env` and key between runs; do not overwrite an existing configured `
 | SQLite | `/data/eventy.db` in the `eventy-data` named volume |
 | Captured messages | `/data/mailpit.db` in the `mailpit-data` named volume |
 
-Both published ports bind to loopback. SMTP is available to the backend at `mailpit:1025` inside Compose and is not published on the host. The Compose environment configures the existing #6 mail adapter, using no SMTP credentials or external delivery. Mailpit does not relay messages externally. The image runs the app as a non-root user and checks `/health`; the backend waits for Mailpit readiness and runs the repeatable auth migration before starting. A fresh volume starts empty. Native `backend/eventy.db` is not imported or modified.
+Both published ports bind to loopback. SMTP is available to the backend at `mailpit:1025` inside Compose and is not published on the host. The Compose environment configures the existing #6 mail adapter, using no SMTP credentials or external delivery. Mailpit does not relay messages externally. The image runs the app as a non-root user and checks `/health`; the backend waits for Mailpit readiness and runs the repeatable auth migration before starting. On startup, Compose creates the local demo administrator if its email is absent. Native `backend/eventy.db` is not imported or modified.
 
 ### 3. Load data: sample events or an existing database
 
@@ -242,7 +242,7 @@ Register a dedicated account and verify it using the emailed code. Run the follo
 ..\.venv\Scripts\python -m scripts.grant_admin admin@example.com
 ```
 
-For Docker Compose, the container runs the migration on startup. From the repository root, grant access with `docker compose exec backend python -m scripts.grant_admin admin@example.com`.
+For local Docker Compose, sign in with `admin-demo@example.com` and the default password `EventyDemo2026!`. Set `EVENTY_DEMO_ADMIN_PASSWORD` in the root `.env` before first startup to choose a different password, or set it to an empty value to skip account creation. Startup preserves existing accounts, including their passwords and roles. To grant access to another verified account, run `docker compose exec backend python -m scripts.grant_admin admin@example.com` from the repository root.
 
 Open `/pages/admin-login.html` on the frontend and sign in again. Granting admin access invalidates sessions issued before the grant. Use the management page to create an event with at least one session, edit its information and sessions, or delete it. The editor uses Vietnam time (UTC+7).
 

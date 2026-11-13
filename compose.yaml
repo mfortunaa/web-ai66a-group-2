@@ -6,6 +6,7 @@ services:
     environment:
       SECRET_KEY: ${EVENTY_SECRET_KEY:?Set EVENTY_SECRET_KEY in the root .env; see .env.example}
       DATABASE_URL: sqlite:////data/eventy.db
+      EVENTY_DEMO_ADMIN_PASSWORD: ${EVENTY_DEMO_ADMIN_PASSWORD-EventyDemo2026!}
       FRONTEND_URL: http://localhost:${EVENTY_HTTP_PORT:-8080}
       SMTP_HOST: mailpit
       SMTP_PORT: "1025"
