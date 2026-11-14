@@ -6,9 +6,9 @@
   <meta name="description" content="Khám phá sự kiện đang và sắp mở bán trên Eventy.">
   <title data-i18n-vi="Khám phá sự kiện | Eventy" data-i18n-en="Discover events | Eventy">Khám phá sự kiện | Eventy</title>
   <script src="../js/site-preferences-init.js?v=2"></script>
-  <link rel="stylesheet" href="../css/common.css">
-  <link rel="stylesheet" href="../css/events.css">
-  <script type="module" src="../js/events.js?v=2"></script>
+  <link rel="stylesheet" href="../css/common.css?v=3">
+  <link rel="stylesheet" href="../css/events.css?v=4">
+  <script type="module" src="../js/events.js?v=3"></script>
 </head>
 <body>
   <div class="site-shell">
@@ -18,22 +18,28 @@
         <span>eventy</span>
       </a>
       <nav class="site-nav" aria-label="Điều hướng chính" data-i18n-aria-vi="Điều hướng chính" data-i18n-aria-en="Main navigation">
-        <a class="nav-link" href="events.html" aria-current="page" data-i18n-vi="Sự kiện" data-i18n-en="Events">Sự kiện</a>
         <button id="language-toggle" class="header-control" type="button">EN</button>
         <button id="theme-toggle" class="header-control" type="button" aria-pressed="false">
           <span class="theme-toggle-icon" data-theme-icon aria-hidden="true">◐</span>
           <span data-theme-label>Giao diện tối</span>
         </button>
-        <a class="nav-link" href="my-bookings.html" data-i18n-vi="Vé của tôi" data-i18n-en="My bookings">Vé của tôi</a>
-        <button id="logout" class="secondary" type="button" data-i18n-vi="Đăng xuất" data-i18n-en="Log out">Đăng xuất</button>
+        <details class="account-menu">
+          <summary class="account-menu-trigger" aria-label="Mở menu tài khoản" data-i18n-aria-vi="Mở menu tài khoản" data-i18n-aria-en="Open account menu">
+            <svg class="account-avatar" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+            <svg class="account-chevron" viewBox="0 0 16 16" aria-hidden="true"><path d="m3 6 5 5 5-5"/></svg>
+          </summary>
+          <div class="account-menu-panel">
+            <a class="account-menu-item" href="my-bookings.html" data-i18n-vi="Vé của tôi" data-i18n-en="My bookings">Vé của tôi</a>
+            <a class="account-menu-item" href="account-settings.html" data-i18n-vi="Cài đặt tài khoản" data-i18n-en="Account settings">Cài đặt tài khoản</a>
+            <button id="logout" class="account-menu-item account-menu-logout" type="button" data-i18n-vi="Đăng xuất" data-i18n-en="Log out">Đăng xuất</button>
+          </div>
+        </details>
       </nav>
     </header>
 
     <main>
       <section class="catalog-intro" aria-labelledby="page-title">
-        <p class="eyebrow">EVENTY · <span data-i18n-vi="KHÁM PHÁ &amp; ĐĂNG KÝ" data-i18n-en="DISCOVER &amp; BOOK">KHÁM PHÁ &amp; ĐĂNG KÝ</span></p>
         <h1 id="page-title" data-i18n-vi="Tìm sự kiện dành cho bạn" data-i18n-en="Find an event for you">Tìm sự kiện dành cho bạn</h1>
-        <p class="lead" data-i18n-vi="Khám phá những cuộc hẹn sắp tới, xem thông tin vé và chọn ngày phù hợp." data-i18n-en="Discover upcoming events, check ticket details, and find a date that works for you.">Khám phá những cuộc hẹn sắp tới, xem thông tin vé và chọn ngày phù hợp.</p>
       </section>
 
       <form id="filters" class="filter-panel" aria-label="Lọc sự kiện" data-i18n-aria-vi="Lọc sự kiện" data-i18n-aria-en="Filter events">
@@ -68,7 +74,7 @@
       <div id="catalog-sections" class="catalog-sections" hidden>
         <section class="event-section" aria-labelledby="on-sale-title">
           <div class="section-heading">
-            <div><p class="eyebrow" data-i18n-vi="CHỌN VÉ NGAY" data-i18n-en="BOOK NOW">CHỌN VÉ NGAY</p><h2 id="on-sale-title" data-i18n-vi="Đang mở bán" data-i18n-en="On sale">Đang mở bán</h2></div>
+            <div><h2 id="on-sale-title" data-i18n-vi="Đang mở bán" data-i18n-en="On sale">Đang mở bán</h2></div>
             <span id="on-sale-count" class="event-count">0</span>
           </div>
           <div id="on-sale-events" class="event-grid"></div>
@@ -77,7 +83,7 @@
 
         <section class="event-section" aria-labelledby="coming-soon-title">
           <div class="section-heading">
-            <div><p class="eyebrow" data-i18n-vi="ĐỪNG BỎ LỠ" data-i18n-en="COMING SOON">ĐỪNG BỎ LỠ</p><h2 id="coming-soon-title" data-i18n-vi="Sắp mở bán" data-i18n-en="Coming soon">Sắp mở bán</h2></div>
+            <div><h2 id="coming-soon-title" data-i18n-vi="Sắp mở bán" data-i18n-en="Coming soon">Sắp mở bán</h2></div>
             <span id="coming-soon-count" class="event-count">0</span>
           </div>
           <div id="coming-soon-events" class="event-grid"></div>
@@ -86,7 +92,7 @@
 
         <section id="unavailable-section" class="event-section" aria-labelledby="unavailable-title" hidden>
           <div class="section-heading">
-            <div><p class="eyebrow" data-i18n-vi="CẬP NHẬT TRẠNG THÁI" data-i18n-en="STATUS UPDATE">CẬP NHẬT TRẠNG THÁI</p><h2 id="unavailable-title" data-i18n-vi="Đã đóng hoặc hết vé" data-i18n-en="Closed or sold out">Đã đóng hoặc hết vé</h2></div>
+            <div><h2 id="unavailable-title" data-i18n-vi="Đã đóng hoặc hết vé" data-i18n-en="Closed or sold out">Đã đóng hoặc hết vé</h2></div>
             <span id="unavailable-count" class="event-count">0</span>
           </div>
           <div id="unavailable-events" class="event-grid"></div>

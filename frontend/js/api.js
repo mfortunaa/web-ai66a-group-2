@@ -1,5 +1,5 @@
 import { API_BASE_URL } from './config.js';
-import { clearToken, getToken, loginUrl } from './auth.js';
+import { clearToken, getToken, loginUrl } from './auth.js?v=5';
 
 const errorMessages = {
   401: 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.',

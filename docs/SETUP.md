@@ -199,11 +199,12 @@ Tests use isolated in-memory and temporary file SQLite databases and a test-only
 | --- | --- | --- |
 | `POST /api/auth/register` | JSON: `full_name`, `email`, `password` | 201: `id`, `full_name`, `email`, `is_email_verified`, `verification_delivery` |
 | `POST /api/auth/token` | Form data: `username` (email), `password` | 200: `access_token`, `token_type: bearer`, `expires_in` (seconds) |
-| `GET /api/auth/me` | `Authorization: Bearer <access_token>` | 200: `id`, `full_name`, `email`, `is_email_verified`, `role` |
+| `GET /api/auth/me` | `Authorization: Bearer <access_token>` | 200: `id`, `full_name`, `email`, `is_email_verified`, `role`, optional `date_of_birth`, `phone_number` |
+| `PATCH /api/auth/me` | Bearer token and JSON `full_name`, optional `date_of_birth`, `phone_number` | 200 updated profile; email and unknown fields are rejected |
 
 Use `from app.db.session import get_session` for the session dependency and `from app.core.security import get_current_user` for authenticated routes. The user table class is `app.models.user.User`. Add new routers to `app/main.py` and import new tables inside `create_db_and_tables()` in `app/db/session.py`.
 
-Email is normalized to lowercase for registration and login. Passwords must have at least eight characters, no null characters, and at most 72 UTF-8 bytes, matching bcrypt's input limit. Errors: 409 duplicate email, 422 invalid registration, 401 invalid credentials/token. JWT uses HS256, a user ID `sub`, and required `iat`/`exp`/`ver` claims.
+Email is normalized to lowercase for registration and login. Passwords must have at least eight characters and no application-level maximum; new hashes use Argon2id while existing bcrypt hashes remain verifiable. The profile endpoint changes the name only, leaving email immutable. Errors: 409 duplicate email, 422 invalid registration, 401 invalid credentials/token. JWT uses HS256, a user ID `sub`, and required `iat`/`exp`/`ver` claims.
 
 ## Frontend contract for teammates
 
@@ -231,7 +232,7 @@ Before using an existing database, stop the app and back up the SQLite file, the
 ..\.venv\Scripts\python -m app.db.migrate_auth
 ```
 
-The migration is repeatable. It adds any missing auth columns with defaults `is_email_verified=false`, `token_version=0`, and `role=user`. It also creates challenge/limit tables. Use the verification page's resend action for accounts that still need verification. To explicitly verify ONE existing development account, run `python -m app.db.migrate_auth --verify-email an@example.com` with the virtualenv Python. This is a development-only action; the normal signup/demo flow always uses emailed OTPs. JWTs issued before migration lack the required version and must log in again. `create_all` alone does not upgrade existing columns.
+The migration is repeatable. It adds any missing auth columns with defaults `is_email_verified=false`, `token_version=0`, and `role=user`; it also creates challenge/limit tables and nullable `date_of_birth`/`phone_number` profile columns. Use the verification page's resend action for accounts that still need verification. To explicitly verify ONE existing development account, run `python -m app.db.migrate_auth --verify-email an@example.com` with the virtualenv Python. This is a development-only action; the normal signup/demo flow always uses emailed OTPs. JWTs issued before migration lack the required version and must log in again. `create_all` alone does not upgrade existing columns.
 
 ## Admin event management
 

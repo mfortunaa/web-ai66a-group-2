@@ -1,6 +1,6 @@
-import { translate as t, getLanguage, initializeSitePreferences } from './site-preferences.js';
+import { translate as t, getLanguage, initializeSitePreferences } from './site-preferences.js?v=7';
 import { apiRequest } from './api.js';
-import { logout, requireAuth } from './auth.js';
+import { logout, requireAuth } from './auth.js?v=5';
 import { localizeMessage } from './flow-messages.js';
 
 initializeSitePreferences();
@@ -41,6 +41,33 @@ function setFormMessage(text) {
 function formatDateTime(value) {
   const date = new Date(value);
   return Number.isNaN(date.getTime()) ? t("Thời gian đang cập nhật", "Time to be confirmed") : dateTimeFormatter.format(date);
+}
+
+function formatSessionRange(startValue, endValue) {
+  const start = new Date(startValue);
+  const end = new Date(endValue);
+  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
+    return t("Thời gian đang cập nhật", "Time to be confirmed");
+  }
+  const locale = getLanguage() === 'en' ? 'en-GB' : 'vi-VN';
+  const timeFormatter = new Intl.DateTimeFormat(locale, {
+    hour: '2-digit', minute: '2-digit', hourCycle: 'h23', timeZone,
+  });
+  const dateFormatter = new Intl.DateTimeFormat(locale, {
+    day: '2-digit', month: '2-digit', year: 'numeric', timeZone,
+  });
+  const startTime = timeFormatter.format(start);
+  const endTime = timeFormatter.format(end);
+  const startDate = dateFormatter.format(start);
+  const endDate = dateFormatter.format(end);
+  if (startDate === endDate) {
+    return getLanguage() === 'en'
+      ? `${startTime}–${endTime}, ${startDate}`
+      : `${startTime} – ${endTime} ngày ${startDate}`;
+  }
+  return getLanguage() === 'en'
+    ? `${startTime}, ${startDate} – ${endTime}, ${endDate}`
+    : `${startTime} ngày ${startDate} – ${endTime} ngày ${endDate}`;
 }
 
 function formatPrice(value) {
@@ -100,6 +127,9 @@ function selectedSession() {
 function updateEstimate() {
   const session = selectedSession();
   const available = session?.available_tickets || 0;
+  document.querySelector('#selected-session-time').textContent = session
+    ? formatSessionRange(session.starts_at, session.ends_at)
+    : t('Chưa chọn', 'Not selected');
   quantityInput.max = String(available || 1);
   document.querySelector('#availability-help').textContent = session
     ? t(`Còn ${available.toLocaleString('vi-VN')} vé cho suất diễn này.`, `${available.toLocaleString('en-GB')} tickets left for this performance.`)
@@ -360,7 +390,7 @@ document.querySelector('#start-new-booking').addEventListener('click', () => {
 });
 
 function sessionLabel(session) {
-  return `${formatDateTime(session.starts_at)} · ${t('Còn', 'Remaining:')} ${session.available_tickets.toLocaleString(getLanguage() === 'en' ? 'en-GB' : 'vi-VN')} ${t('vé', 'tickets')}`;
+  return `${formatSessionRange(session.starts_at, session.ends_at)} · ${t('Còn', 'Remaining:')} ${session.available_tickets.toLocaleString(getLanguage() === 'en' ? 'en-GB' : 'vi-VN')} ${t('vé', 'tickets')}`;
 }
 window.addEventListener('eventy:languagechange', () => {
   message.textContent = localizeMessage(message.textContent);

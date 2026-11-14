@@ -7,6 +7,7 @@ Authentication, event and booking endpoints are implemented. See [setup and auth
 | POST | `/api/auth/register` | Create an account using a JSON body | 201 |
 | POST | `/api/auth/token` | Sign in using OAuth2 username/password form data | 200 |
 | GET | `/api/auth/me` | Return the authenticated user's public profile | 200 |
+| PATCH | `/api/auth/me` | Update the authenticated user's name and optional profile details; email is not editable | 200 |
 | GET | `/api/events` | List events with optional `sale_status`, `date_from`, `date_to` filters | 200 |
 | GET | `/api/events/highlights` | Return public previews for the login and registration pages | 200 |
 | GET | `/api/events/{event_id}` | Return event details and current availability | 200 |
@@ -19,7 +20,7 @@ Authentication, event and booking endpoints are implemented. See [setup and auth
 
 `POST /api/bookings/{booking_id}/cancel` cancels an owned booking (401 without login, 403 for another owner, 404 if missing). It returns the booking with `status: "cancelled"`, UTC `cancelled_at`, `can_retry_payment: false`, and reason `cancelled`. Repeated cancellation returns the first cancellation timestamp. Cancellation is non-refundable and permanent: stored totals, `paid_at`, and consumed stock remain unchanged. Both payment outcomes return 409 after cancellation. The database preserves the original payment status for audit and exposes the cancelled state when `cancelled_at` is set. Startup migration adds this nullable column without rebuilding or removing existing bookings.
 
-`GET /api/bookings?limit=10&offset=0` requires a bearer JWT and returns only that user's bookings, ordered by `created_at DESC, id DESC`. `limit` defaults to 10 (1–50); `offset` defaults to 0 (0–10000). The `total` counts all bookings owned by the user, before pagination. Empty accounts return `items: []` and `total: 0`.
+`GET /api/bookings?limit=10&offset=0` requires a bearer JWT and returns only that user's bookings, ordered by `created_at DESC, id DESC`. `limit` defaults to 10 (1–50) and `offset` defaults to 0 (0–10000). Optional `status` filters are `confirmed`, `processing` (pending or failed payment), and `cancelled`. The `upcoming` period includes sessions whose end time is in the future, including sessions in progress. The `past` period includes sessions that have reached or passed their end time. `total` counts the matching bookings before pagination. Empty filtered results return `items: []` and `total: 0`.
 
 ```json
 {
@@ -130,5 +131,8 @@ The final request/response examples, defaults and error contracts are in [auth-c
 - `POST /api/auth/resend-verification`: JSON `{ "email": "an@example.com" }`.
 - `POST /api/auth/forgot-password`: JSON `{ "email": "an@example.com" }`.
 - `POST /api/auth/reset-password`: JSON `{ "token": "emailed-token", "password": "replacement123" }`.
+- `PATCH /api/auth/me`: JSON `{ "full_name": "New Name", "date_of_birth": "2000-02-29", "phone_number": "+84 901 234 567" }`. Birthday and phone are optional and can be cleared with `null` or an empty string. Email and unknown fields are rejected.
 
 Wrong credentials return 401. Only correct credentials can return 403 with `detail.code=email_not_verified` and `detail.action=verify-email`. Invalid/expired/used challenges return 400 with `detail.code=invalid_challenge`. Rate limits return 429 with `detail.code=rate_limited`, integer `detail.retry_after` seconds and the exposed `Retry-After` header. An eligible resend whose SMTP send fails returns 503 `delivery_failed`; registration remains saved if delivery fails. Recovery requests always return the same 200 message for known/unknown emails and SMTP failures. Reset uses registration's password rules, revokes all earlier JWTs, and does not log in automatically.
+
+Registration and password reset require at least eight characters with no application-level maximum. New hashes use Argon2id; existing bcrypt hashes remain verifiable for migrated accounts. Profile updates accept `full_name` only, so email remains immutable.

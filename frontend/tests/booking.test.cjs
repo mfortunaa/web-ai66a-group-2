@@ -14,9 +14,11 @@ const key = 'eventy-booking-request:1:2';
 
 function page(entries = [], transport = async () => ({ id: 99 })) {
   const nodes = new Map();
+  const handlers = {};
   function node(selector) {
     if (!nodes.has(selector)) nodes.set(selector, { value: '', hidden: true,
       disabled: false, textContent: '', dataset: {}, addEventListener() {},
+      options: [],
       setAttribute() {}, append() {}, replaceChildren() {},
       reset() { for (const item of nodes.values()) item.value = ''; },
       querySelectorAll() { return ['#quantity', '#event-session', '#attendee-name',
@@ -27,15 +29,16 @@ function page(entries = [], transport = async () => ({ id: 99 })) {
   const requests = [];
   const navigations = [];
   let user = { id: 1, full_name: 'Demo A', email: 'a@example.com' };
+  let language = 'vi';
   const event = { id: 2, title: 'Event', starts_at: '2026-12-01T12:00:00Z',
     ends_at: '2026-12-01T14:00:00Z', ticket_price_vnd: 100000,
     sale_status: 'on_sale', is_bookable: true,
     sessions: [{ id: 20, is_bookable: true, available_tickets: 10,
-      starts_at: '2026-12-01T12:00:00Z' }] };
-  const context = vm.createContext({ t: (vi, en) => vi, getLanguage: () => 'vi', initializeSitePreferences() {}, localizeMessage: text => text, console, Intl, URLSearchParams,
+      starts_at: '2026-12-01T12:00:00Z', ends_at: '2026-12-01T14:00:00Z' }] };
+  const context = vm.createContext({ t: (vi, en) => language === 'en' ? en : vi, getLanguage: () => language, initializeSitePreferences() {}, localizeMessage: text => text, console, Intl, URLSearchParams,
     crypto: { randomUUID: () => 'new-request-key' },
     document: { querySelector: node, createElement: () => node(`option-${nodes.size}`) },
-    window: { addEventListener() {}, location: { search: '?event_id=2', assign: url => navigations.push(url) } },
+    window: { addEventListener(name, handler) { handlers[name] = handler; }, location: { search: '?event_id=2', assign: url => navigations.push(url) } },
     sessionStorage: { getItem: k => storage.get(k) ?? null,
       setItem: (k, v) => storage.set(k, v), removeItem: k => storage.delete(k) },
     requireAuth: async () => user, logout() {},
@@ -45,9 +48,11 @@ function page(entries = [], transport = async () => ({ id: 99 })) {
       return transport(url, options);
     },
   });
-  vm.runInContext(`${source}\nthis.controller = { loadPage, submitBooking };`, context);
+  vm.runInContext(`${source}\nthis.controller = { loadPage, submitBooking, sessionLabel, updateEstimate };`, context);
   return { node, storage, requests, navigations, ...context.controller,
-    setUser: value => { user = value; } };
+    setUser: value => { user = value; },
+    setLanguage: value => { language = value; },
+    changeLanguage: () => handlers['eventy:languagechange']?.() };
 }
 
 for (const status of [404, 409, 422]) {
@@ -118,4 +123,20 @@ test('double retry sends only one booking request', async () => {
   finish({ id: 99 });
   await first;
   assert.equal(p.navigations.length, 1);
+});
+
+test('performance options and booking summary show Vietnam-local 24-hour ranges in both languages', async () => {
+  const p = page();
+  assert.match(p.sessionLabel({ starts_at: '2026-12-01T12:00:00Z', ends_at: '2026-12-01T14:00:00Z', available_tickets: 2 }),
+    /^19:00 – 21:00 ngày 01\/12\/2026/);
+  await p.loadPage();
+  p.node('#event-session').value = '20';
+  p.node('#attendee-name').value = 'Name stays';
+  p.updateEstimate();
+  assert.equal(p.node('#selected-session-time').textContent, '19:00 – 21:00 ngày 01/12/2026');
+
+  p.setLanguage('en');
+  p.changeLanguage();
+  assert.equal(p.node('#selected-session-time').textContent, '19:00–21:00, 01/12/2026');
+  assert.equal(p.node('#attendee-name').value, 'Name stays');
 });

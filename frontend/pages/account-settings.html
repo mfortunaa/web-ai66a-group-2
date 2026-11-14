@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Quản lý thông tin tài khoản Eventy.">
+  <title data-i18n-vi="Cài đặt tài khoản | Eventy" data-i18n-en="Account settings | Eventy">Cài đặt tài khoản | Eventy</title>
+  <script src="../js/site-preferences-init.js?v=2"></script>
+  <link rel="stylesheet" href="../css/auth.css?v=3">
+  <script type="module" src="../js/account-page.js?v=4"></script>
+</head>
+<body>
+  <div class="site-shell">
+    <header class="site-header">
+      <a class="brand" href="events.html" aria-label="Eventy – Khám phá sự kiện">
+        <svg class="brand-mark" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h18v5a2 2 0 0 0 0 4v5H3v-5a2 2 0 0 0 0-4V5Z"/><path d="M15 5v14" stroke-dasharray="2 2"/></svg>
+        <span>eventy</span>
+      </a>
+      <nav class="site-nav" aria-label="Điều hướng chính" data-i18n-aria-vi="Điều hướng chính" data-i18n-aria-en="Main navigation">
+        <button id="language-toggle" class="header-control" type="button">EN</button>
+        <button id="theme-toggle" class="header-control" type="button" aria-pressed="false"><span data-theme-icon aria-hidden="true">☀</span><span data-theme-label>Giao diện tối</span></button>
+        <details class="account-menu">
+          <summary class="account-menu-trigger" aria-label="Mở menu tài khoản" data-i18n-aria-vi="Mở menu tài khoản" data-i18n-aria-en="Open account menu">
+            <svg class="account-avatar" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+            <svg class="account-chevron" viewBox="0 0 16 16" aria-hidden="true"><path d="m3 6 5 5 5-5"/></svg>
+          </summary>
+          <div class="account-menu-panel">
+            <a class="account-menu-item" href="my-bookings.html" data-i18n-vi="Vé của tôi" data-i18n-en="My bookings">Vé của tôi</a>
+            <a class="account-menu-item" href="account-settings.html" aria-current="page" data-i18n-vi="Cài đặt tài khoản" data-i18n-en="Account settings">Cài đặt tài khoản</a>
+            <button id="logout" class="account-menu-item account-menu-logout" type="button" data-i18n-vi="Đăng xuất" data-i18n-en="Log out">Đăng xuất</button>
+          </div>
+        </details>
+      </nav>
+    </header>
+    <main class="account-content">
+      <h1 data-i18n-vi="Cài đặt tài khoản" data-i18n-en="Account settings">Cài đặt tài khoản</h1>
+      <p id="page-message" class="page-message" role="status" aria-live="polite"></p>
+      <button id="retry" class="button-secondary" type="button" hidden data-i18n-vi="Thử lại" data-i18n-en="Retry">Thử lại</button>
+      <form id="account-form" class="profile-panel" aria-describedby="form-message" hidden>
+        <div class="field">
+          <label for="user-name" data-i18n-vi="Họ và tên" data-i18n-en="Full name">Họ và tên</label>
+          <input id="user-name" name="full_name" autocomplete="name" maxlength="100" required>
+        </div>
+        <div class="field">
+          <label for="user-email">Email</label>
+          <input id="user-email" type="email" autocomplete="email" readonly aria-describedby="email-hint">
+          <small id="email-hint" data-i18n-vi="Email là cố định và không thể chỉnh sửa." data-i18n-en="Your email is fixed and cannot be changed.">Email là cố định và không thể chỉnh sửa.</small>
+        </div>
+        <div class="field">
+          <label for="date-of-birth" data-i18n-vi="Ngày sinh (không bắt buộc)" data-i18n-en="Date of birth (optional)">Ngày sinh (không bắt buộc)</label>
+          <input id="date-of-birth" name="date_of_birth" type="date" autocomplete="bday">
+        </div>
+        <div class="field">
+          <label for="phone-number" data-i18n-vi="Số điện thoại (không bắt buộc)" data-i18n-en="Phone number (optional)">Số điện thoại (không bắt buộc)</label>
+          <input id="phone-number" name="phone_number" type="tel" autocomplete="tel" maxlength="20">
+        </div>
+        <p id="form-message" class="message" role="status" aria-live="polite"></p>
+        <button id="save-profile" class="primary" type="submit" data-i18n-vi="Lưu thay đổi" data-i18n-en="Save changes">Lưu thay đổi</button>
+      </form>
+    </main>
+    <footer class="site-footer"><div class="footer-inner" data-i18n-vi="Eventy · Thông tin tài khoản được bảo vệ." data-i18n-en="Eventy · Your account information is protected.">Eventy · Thông tin tài khoản được bảo vệ.</div></footer>
+  </div>
+</body>
+</html>

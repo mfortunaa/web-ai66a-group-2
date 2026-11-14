@@ -1,7 +1,7 @@
 import { API_BASE_URL } from './config.js';
-import { apiRequest } from './api.js';
-import { logout, requireAuth } from './auth.js';
-import { getLanguage, initializeSitePreferences, translate } from './site-preferences.js';
+import { apiRequest } from './api.js?v=3';
+import { logout, requireAuth } from './auth.js?v=5';
+import { getLanguage, initializeSitePreferences, translate } from './site-preferences.js?v=7';
 
 const params = new URLSearchParams(window.location.search);
 const eventId = params.get('event_id');

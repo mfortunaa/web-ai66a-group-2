@@ -5,6 +5,7 @@
   gap: 16px;
 }
 .admin-header { min-height: 64px; border-bottom: 1px solid var(--border); }
+.admin-header .site-preference-controls { display: flex; align-items: center; gap: 8px; }
 .admin-header > a:not(.brand), .admin-account span { color: var(--muted); font-size: 14px; }
 .admin-account span { overflow-wrap: anywhere; }
 .admin-header button, .admin-title button { flex-shrink: 0; }

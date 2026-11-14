@@ -22,7 +22,7 @@ export async function authRequest(path, options = {}) {
     const messages = {
       401: 'Email hoặc mật khẩu không chính xác, hoặc phiên đăng nhập đã hết hạn.',
       409: 'Email này đã được đăng ký.',
-      422: 'Thông tin chưa hợp lệ. Kiểm tra email, họ tên và mật khẩu (8 ký tự, tối đa 72 byte).',
+      422: 'Thông tin chưa hợp lệ. Kiểm tra email, họ tên và mật khẩu (tối thiểu 8 ký tự).',
     };
     const error = new Error(messages[response.status] || 'Có lỗi xảy ra. Vui lòng thử lại.');
     error.status = response.status;
@@ -72,7 +72,8 @@ export async function getCurrentUser() {
   const token = getToken();
   if (!token) { const error = new Error('Vui lòng đăng nhập.'); error.status = 401; throw error; }
   try {
-    return await fetchProfile(token);
+    const user = await fetchProfile(token);
+    return user;
   } catch (error) {
     if (error.status === 401) clearToken();
     throw error;
