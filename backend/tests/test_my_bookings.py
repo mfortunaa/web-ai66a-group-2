@@ -295,6 +295,35 @@ def test_my_bookings_status_and_period_filters_keep_pagination_totals(client, db
         assert client.get(f"/api/bookings?{query}", headers=headers).status_code == 422
 
 
+def test_booking_period_switches_when_the_session_ends(client, db_engine, monkeypatch):
+    headers = create_account(client, "booking-period@example.com")
+    user_id = account_id(db_engine, "booking-period@example.com")
+    start = datetime.now(timezone.utc)
+    event_id, session_id = add_event_and_session(db_engine, starts_at=start)
+    booking_id = add_booking(
+        db_engine, user_id=user_id, event_id=event_id, event_session_id=session_id,
+        status=BookingStatus.CONFIRMED.value,
+    )
+    current = start + timedelta(hours=1)
+
+    class Clock:
+        @staticmethod
+        def now(tz):
+            return current.astimezone(tz)
+
+    monkeypatch.setattr("app.api.my_bookings.datetime", Clock)
+    for period, expected in (("upcoming", [booking_id]), ("past", [])):
+        result = client.get(f"/api/bookings?period={period}", headers=headers).json()
+        assert result["total"] == len(expected)
+        assert [item["id"] for item in result["items"]] == expected
+
+    current = start + timedelta(hours=2)
+    for period, expected in (("upcoming", []), ("past", [booking_id])):
+        result = client.get(f"/api/bookings?period={period}", headers=headers).json()
+        assert result["total"] == len(expected)
+        assert [item["id"] for item in result["items"]] == expected
+
+
 def test_my_bookings_reports_retryability_for_status_sales_and_stock(client, db_engine):
     headers = create_account(client, "retry-status@example.com")
     user_id = account_id(db_engine, "retry-status@example.com")

@@ -117,3 +117,42 @@ test('status and time filters request matching server pages and reset pagination
   assert.equal(ui.requests[2], '/api/bookings?limit=10&offset=0&period=past&status=processing');
   assert.equal(ui.get('#period-tabs').children[1].attributes['aria-pressed'], 'true');
 });
+
+test('filter changes during a request render only the latest selection', async () => {
+  let finishOldRequest;
+  let finishNewRequest;
+  let oldRequestStarted;
+  let newRequestStarted;
+  const oldResponse = new Promise(resolve => { finishOldRequest = resolve; });
+  const newResponse = new Promise(resolve => { finishNewRequest = resolve; });
+  const oldRequest = new Promise(resolve => { oldRequestStarted = resolve; });
+  const newRequest = new Promise(resolve => { newRequestStarted = resolve; });
+  const ui = setup(url => {
+    if (url.includes('period=upcoming')) {
+      oldRequestStarted();
+      return oldResponse;
+    }
+    newRequestStarted();
+    return newResponse;
+  });
+  const loading = ui.load(10);
+  await oldRequest;
+  assert.equal(ui.requests.length, 1);
+  ui.get('#period-tabs').children[1].listeners.click();
+  ui.get('#status-tabs').children[1].listeners.click();
+
+  finishOldRequest(pageData([booking({ event_title: 'Old result' })], 11));
+  await Promise.race([newRequest, loading]);
+  assert.equal(ui.get('#bookings-content').hidden, true);
+  assert.equal(ui.get('#bookings-list').children.length, 0);
+
+  finishNewRequest(pageData([booking({ status: 'confirmed', event_title: 'Latest result' })]));
+  await loading;
+  assert.deepEqual(ui.requests, [
+    '/api/bookings?limit=10&offset=10&period=upcoming',
+    '/api/bookings?limit=10&offset=0&period=past&status=confirmed',
+  ]);
+  assert.equal(ui.get('#period-tabs').children[1].attributes['aria-pressed'], 'true');
+  assert.equal(ui.get('#bookings-content').hidden, false);
+  assert.ok(descendants(ui.get('#bookings-list')).some(node => node.textContent === 'Latest result'));
+});

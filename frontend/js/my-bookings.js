@@ -18,6 +18,7 @@ const next = document.querySelector('#next-page');
 const limit = 10;
 let offset = 0;
 let loading = false;
+let reloadFilters = false;
 let authenticated = false;
 let statusFilter = 'all';
 let periodFilter = 'upcoming';
@@ -43,6 +44,10 @@ function attachFilterButtons(container, getValue, currentValue, setValue) {
       setValue(value);
       offset = 0;
       updateFilterButtons();
+      if (loading) {
+        reloadFilters = true;
+        return;
+      }
       return loadPage();
     });
   }
@@ -50,7 +55,7 @@ function attachFilterButtons(container, getValue, currentValue, setValue) {
 
 function renderEmptyState() {
   document.querySelector('#empty-title').textContent = periodFilter === 'upcoming'
-    ? t('Chưa có vé sắp diễn ra.', 'No upcoming bookings.')
+    ? t('Chưa có vé cho suất sắp hoặc đang diễn ra.', 'No bookings for upcoming or ongoing performances.')
     : t('Chưa có vé đã kết thúc.', 'No past bookings.');
   document.querySelector('#empty-description').textContent = t(
     'Thử đổi bộ lọc hoặc chọn “Mua vé ngay” để tìm một trải nghiệm mới.',
@@ -112,9 +117,11 @@ async function loadPage(target = offset) {
   message.textContent = t("Đang tải đặt vé…", "Loading bookings…");
   try {
     if (!authenticated) { await requireAuth(); authenticated = true; }
+    if (reloadFilters) return;
     const params = new URLSearchParams({ limit: String(limit), offset: String(target), period: periodFilter });
     if (statusFilter !== 'all') params.set('status', statusFilter);
     const data = await apiRequest(`/api/bookings?${params}`);
+    if (reloadFilters) return;
     if (!validPage(data)) throw new Error(t("Dữ liệu đặt vé không hợp lệ. Vui lòng thử lại.", "Invalid booking data. Please try again."));
     offset = target;
     displayedPage = data;
@@ -128,6 +135,8 @@ async function loadPage(target = offset) {
     renderEmptyState();
     message.textContent = data.total > 0 && !data.items.length ? t("Trang này không còn đặt vé. Chọn Trang trước để xem lại.", "No bookings remain on this page. Choose Previous page.") : '';
   } catch (error) {
+    if (error.status === 401) reloadFilters = false;
+    if (reloadFilters) return;
     message.textContent = localizeMessage(error.message) || t("Không thể tải đặt vé. Vui lòng thử lại.", "Unable to load bookings. Please try again.");
     message.className = 'page-message error';
     retry.hidden = error.status === 401;
@@ -135,7 +144,12 @@ async function loadPage(target = offset) {
     retry.onclick = () => loadPage(target);
   } finally {
     loading = false;
-    content.setAttribute('aria-busy', 'false');
+    if (reloadFilters) {
+      reloadFilters = false;
+      await loadPage(0);
+    } else {
+      content.setAttribute('aria-busy', 'false');
+    }
   }
 }
 function renderPageText() {

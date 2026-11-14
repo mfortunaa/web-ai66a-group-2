@@ -50,14 +50,10 @@ if (action === 'reset-password' && !token) {
 }
 
 window.addEventListener('eventy:languagechange', () => {
-  const hadLoginLink = Boolean(message.querySelector('a'));
-  if (message.textContent) setMessage(message.textContent);
-  if (hadLoginLink) {
-    const link = document.createElement('a');
-    link.href = loginUrl;
-    link.textContent = translate(' Đăng nhập', ' Sign in');
-    message.append(link);
-  }
+  const text = message.firstChild;
+  if (text) text.textContent = localizeMessage(text.textContent);
+  const link = message.querySelector('a');
+  if (link) link.textContent = translate(' Đăng nhập', ' Sign in');
   controls();
 });
 

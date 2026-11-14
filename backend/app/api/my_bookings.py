@@ -41,9 +41,9 @@ def list_my_bookings(
 
     now = datetime.now(timezone.utc)
     if period == "upcoming":
-        conditions.append(EventSession.starts_at >= now)
+        conditions.append(EventSession.ends_at > now)
     elif period == "past":
-        conditions.append(EventSession.starts_at < now)
+        conditions.append(EventSession.ends_at <= now)
 
     total = session.exec(
         select(func.count())
